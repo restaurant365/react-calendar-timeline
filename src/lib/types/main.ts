@@ -204,8 +204,8 @@ export interface IntervalRenderer<Data> {
 export interface Interval {
   startTime: Dayjs
   endTime: Dayjs
-  labelWidth: number
-  left: number
+  labelWidth?: number
+  left?: number
 }
 
 export interface HeaderContext {
