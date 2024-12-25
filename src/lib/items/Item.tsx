@@ -10,8 +10,6 @@ import {
   TouchEventHandler,
 } from 'react'
 import interact from 'interactjs'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { _get } from '../utility/generic'
 import { composeEvents } from '../utility/events'
 import { defaultItemRenderer } from './defaultItemRenderer'
@@ -31,8 +29,7 @@ import {
 import { Id, ItemContext, TimelineItemBase, TimelineKeys } from '../types/main'
 import { TimelineContext, TimelineContextType } from '../timeline/TimelineStateContext'
 import isEqual from 'lodash/isEqual'
-
-dayjs.extend(utc)
+import moment from 'moment'
 
 export type ResizeEdge = 'left' | 'right'
 
@@ -205,7 +202,7 @@ export default class Item<CustomItem extends TimelineItemBase<number>> extends C
   dragTimeSnap(dragTime: number, considerOffset?: boolean) {
     const { dragSnap } = this.props
     if (dragSnap) {
-      const offset = considerOffset ? dayjs().utcOffset() * 60 * 1000 : 0
+      const offset = considerOffset ? moment().utcOffset() * 60 * 1000 : 0
       return Math.round(dragTime / dragSnap) * dragSnap - (offset % dragSnap)
     } else {
       return dragTime
@@ -223,7 +220,7 @@ export default class Item<CustomItem extends TimelineItemBase<number>> extends C
   }
 
   dragTime(e: MouseEvent) {
-    const startTime = dayjs(this.itemTimeStart)
+    const startTime = moment(this.itemTimeStart)
 
     if (this.state.dragging) {
       return this.dragTimeSnap(this.timeFor(e) + this.state.dragStart!.offset, true)

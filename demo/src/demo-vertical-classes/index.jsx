@@ -1,29 +1,29 @@
-import dayjs from 'dayjs'
 import React, { Component } from 'react'
 
 import generateFakeData from '../generate-fake-data'
 import Timeline from 'react-calendar-timeline'
+import moment from 'moment'
 
 const format = 'DD.MM.YYYY'
 const holidays = [
-  dayjs('01.01.2018', format),
-  dayjs('06.01.2018', format),
-  dayjs('30.03.2018', format),
-  dayjs('01.04.2018', format),
-  dayjs('02.04.2018', format),
-  dayjs('01.05.2018', format),
-  dayjs('10.05.2018', format),
-  dayjs('20.05.2018', format),
-  dayjs('21.05.2018', format),
-  dayjs('31.05.2018', format),
-  dayjs('15.08.2018', format),
-  dayjs('26.10.2018', format),
-  dayjs('01.11.2018', format),
-  dayjs('08.12.2018', format),
-  dayjs('24.12.2018', format),
-  dayjs('25.12.2018', format),
-  dayjs('26.12.2018', format),
-  dayjs('31.12.2018', format),
+  moment('01.01.2018', format),
+  moment('06.01.2018', format),
+  moment('30.03.2018', format),
+  moment('01.04.2018', format),
+  moment('02.04.2018', format),
+  moment('01.05.2018', format),
+  moment('10.05.2018', format),
+  moment('20.05.2018', format),
+  moment('21.05.2018', format),
+  moment('31.05.2018', format),
+  moment('15.08.2018', format),
+  moment('26.10.2018', format),
+  moment('01.11.2018', format),
+  moment('08.12.2018', format),
+  moment('24.12.2018', format),
+  moment('25.12.2018', format),
+  moment('26.12.2018', format),
+  moment('31.12.2018', format),
 ]
 
 const keys = {
@@ -43,8 +43,8 @@ export default class App extends Component {
     super(props)
 
     const { groups, items } = generateFakeData()
-    const defaultTimeStart = dayjs().startOf('day').toDate()
-    const defaultTimeEnd = dayjs().startOf('day').add(1, 'day').toDate()
+    const defaultTimeStart = moment().startOf('day').toDate()
+    const defaultTimeEnd = moment().startOf('day').add(1, 'day').toDate()
 
     this.state = {
       groups,
@@ -59,8 +59,8 @@ export default class App extends Component {
   }
 
   verticalLineClassNamesForTime = (timeStart, timeEnd) => {
-    const currentTimeStart = dayjs(timeStart)
-    const currentTimeEnd = dayjs(timeEnd)
+    const currentTimeStart = moment(timeStart)
+    const currentTimeEnd = moment(timeEnd)
 
     let classes = []
 
@@ -75,8 +75,8 @@ export default class App extends Component {
     }
 
     // highlight lunch break (12:00-13:00)
-    const lunchStart = dayjs().hour(12).minute(0).second(0)
-    const lunchEnd = dayjs().hour(13).minute(0).second(0)
+    const lunchStart = moment().hour(12).minute(0).second(0)
+    const lunchEnd = moment().hour(13).minute(0).second(0)
     if (
       this.getMinutesOfDay(currentTimeStart) >=
         this.getMinutesOfDay(lunchStart) &&
