@@ -116,6 +116,7 @@ export default class App extends Component {
         defaultTimeStart={defaultTimeStart}
         defaultTimeEnd={defaultTimeEnd}
         horizontalLineClassNamesForGroup={(group) => group.root ? ["row-root"] : []}
+        resizableCanvas={true}
       />
     )
   }

@@ -148,6 +148,7 @@ export default class App extends Component {
           onItemMove={this.handleItemMove}
           onItemResize={this.handleItemResize}
           onItemDrag={this.handleItemDrag}
+          resizableCanvas={true}
         />
       </div>
     )

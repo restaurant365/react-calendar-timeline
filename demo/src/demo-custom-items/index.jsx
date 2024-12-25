@@ -194,6 +194,7 @@ export default class App extends Component {
     console.log("render")
     return (
       <Timeline
+        resizableCanvas={true}
         groups={groups}
         items={items}
         keys={keys}

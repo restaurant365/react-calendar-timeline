@@ -18,6 +18,8 @@ import CustomHeaders from './demo-headers'
 import CustomInfoLabel from './demo-custom-info-label'
 import ControledSelect from './demo-controlled-select'
 import ControlledScrolling from './demo-controlled-scrolling'
+import NonScrollableTimeline from './demo-non-scrollable-timeline'
+
 const loader = () => 'loading'
 const routes: RouteObject[] = [
   {
@@ -70,6 +72,10 @@ const routes: RouteObject[] = [
     path: '/ControlledScrolling',
     Component: withLayout(ControlledScrolling),
   },
+  {
+    path: '/NonScrollableTimeline',
+    Component: withLayout(NonScrollableTimeline),
+  }
 ]
 
 function Menu() {

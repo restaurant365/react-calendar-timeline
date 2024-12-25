@@ -297,7 +297,7 @@ export function getGroupedItems(items: ItemDimension[], groupOrders: GroupOrders
 
 export function getVisibleItems<
   CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
-  // CustomGroup extends TimelineGroupBase = TimelineGroupBase,
+// CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 >(items: CustomItem[], canvasTimeStart: number, canvasTimeEnd: number, keys: TimelineKeys) {
   const { itemTimeStartKey, itemTimeEndKey } = keys
 
@@ -545,6 +545,14 @@ export function stackTimelineItems<
 }
 
 /**
+ * get canvas width factor
+ * @param {*} shouldExpandCanvas
+ */
+export function getCanvasWidthFactor(shouldExpandCanvas = true) {
+  return shouldExpandCanvas? 3 : 1;
+}
+
+/**
  * get canvas width from visible width
  * @param {*} width
  * @param {*} buffer
@@ -667,7 +675,10 @@ export function getItemWithInteractions<
  * @param {number} visibleTimeEnd
  * @param buffer
  */
-export function getCanvasBoundariesFromVisibleTime(visibleTimeStart: number, visibleTimeEnd: number, buffer: number) {
+export function getCanvasBoundariesFromVisibleTime(visibleTimeStart: number, visibleTimeEnd: number, buffer: number, shouldExpandCanvasBoundaries = true) {
+  if (!shouldExpandCanvasBoundaries) {
+    return [visibleTimeStart, visibleTimeEnd];
+  }
   const zoom = visibleTimeEnd - visibleTimeStart
   // buffer - 1 (1 is visible area) divided by 2 (2 is the buffer split on the right and left of the timeline)
   const canvasTimeStart = visibleTimeStart - (zoom * (buffer - 1)) / 2
@@ -723,6 +734,7 @@ export function calculateScrollCanvas<
       visibleTimeStart,
       visibleTimeEnd,
       buffer!,
+      props.resizableCanvas
     )
     newState.canvasTimeStart = canvasTimeStart
     newState.canvasTimeEnd = canvasTimeEnd
@@ -731,7 +743,7 @@ export function calculateScrollCanvas<
       ...newState,
     }
 
-    const canvasWidth = getCanvasWidth(mergedState.width, props.buffer!)
+    const canvasWidth = getCanvasWidth(mergedState.width, state.canvasWidthFactor)
 
     // The canvas cannot be kept, so calculate the new items position
     Object.assign(
