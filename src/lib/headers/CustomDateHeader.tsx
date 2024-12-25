@@ -10,6 +10,13 @@ export interface CustomDateHeaderProps<Data> {
     intervals: IntervalType[]
     unit: SelectUnits
   }
+  timelineContext: {
+    timelineWidth: number
+    visibleTimeStart: number
+    visibleTimeEnd: number
+    canvasTimeStart: number
+    canvasTimeEnd: number
+  }
   getRootProps: (props?: any) => any
   getIntervalProps: GetIntervalPropsType
   showPeriod: (start: Dayjs, end: Dayjs) => void
@@ -33,7 +40,7 @@ export function CustomDateHeader<Data>({
   return (
     <div data-testid={`dateHeader`} className={className} {...getRootProps({ style })}>
       {intervals.map((interval) => {
-        const intervalText = getLabelFormat([interval.startTime, interval.endTime], unit, interval.labelWidth)
+        const intervalText = getLabelFormat([interval.startTime, interval.endTime], unit, interval.labelWidth!)
         return (
           <Interval
             key={`label-${interval.startTime.valueOf()}`}

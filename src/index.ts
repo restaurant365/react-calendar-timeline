@@ -16,10 +16,12 @@ export { default as DateHeader } from './lib/headers/DateHeader'
 export type { DateHeaderWrapper as DateHeaderProps } from './lib/headers/DateHeader'
 export * as calendarUtils from './lib/utility/calendar'
 export * from './lib/types/main'
+export * from './lib/default-config'
 
-export {default as GroupRow} from './lib/row/GroupRow'
-export {default as RowItems} from './lib/items/Items'
+export { default as GroupRow } from './lib/row/GroupRow'
+export { default as RowItems } from './lib/items/Items'
 
+export { TimelineContext } from './lib/timeline/TimelineStateContext'
 export { Timeline }
 export type { ReactCalendarTimelineProps, ReactCalendarTimelineState, OnTimeChange }
 export default Timeline

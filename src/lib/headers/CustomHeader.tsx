@@ -149,11 +149,11 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
 
   getStateAndHelpers = (): CustomDateHeaderProps<Data> => {
     const {
-      /*canvasTimeStart,
+      canvasTimeStart,
       canvasTimeEnd,
       timelineWidth,
       visibleTimeStart,
-      visibleTimeEnd,*/
+      visibleTimeEnd,
       unit,
       showPeriod,
       headerData,
@@ -161,13 +161,13 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
     //TODO: only evaluate on changing params
 
     return {
-      /*timelineContext: {
+      timelineContext: {
         timelineWidth,
         visibleTimeStart,
         visibleTimeEnd,
         canvasTimeStart,
         canvasTimeEnd,
-      },*/
+      },
       headerContext: {
         unit,
         intervals: this.state.intervals,
