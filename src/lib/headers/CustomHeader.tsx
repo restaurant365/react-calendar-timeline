@@ -3,7 +3,7 @@ import { useTimelineHeadersContext } from './HeadersContext'
 import { useTimelineState } from '../timeline/TimelineStateContext'
 import { iterateTimes } from '../utility/calendar'
 import { Interval, TimelineTimeSteps } from '../types/main'
-import { Dayjs } from 'dayjs'
+import { Moment } from 'moment'
 import { CustomDateHeaderProps } from './CustomDateHeader'
 import isEqual from 'lodash/isEqual'
 import { GetIntervalPropsType } from './types'
@@ -17,7 +17,7 @@ export type CustomHeaderProps<Data> = {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
-  showPeriod: (start: Dayjs, end: Dayjs) => void
+  showPeriod: (start: Moment, end: Moment) => void
   headerData?: Data
   getLeftOffsetFromDate: (date: any) => number
   height: number

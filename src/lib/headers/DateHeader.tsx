@@ -6,20 +6,22 @@ import { defaultHeaderFormats } from '../default-config'
 import memoize from 'memoize-one'
 import { CustomDateHeader } from './CustomDateHeader'
 import { IntervalRenderer, SidebarHeaderChildrenFnProps, TimelineTimeSteps } from '../types/main'
-import { Dayjs, UnitType } from 'dayjs'
+import { Moment, unitOfTime } from 'moment';
+
+type UnitType = unitOfTime.Base | unitOfTime._date;
 
 type GetHeaderData<Data> = (
   intervalRenderer: (p: IntervalRenderer<Data>) => ReactNode,
   style: React.CSSProperties,
   className: string | undefined,
-  getLabelFormat: (interval: [Dayjs, Dayjs], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string,
+  getLabelFormat: (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string,
   unitProp: UnitType | 'primaryHeader' | undefined,
   headerData: Data | undefined,
 ) => {
   intervalRenderer?: IntervalRenderer<Data>
   style: React.CSSProperties
   className: string
-  getLabelFormat: (interval: [Dayjs, Dayjs], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string
+  getLabelFormat: (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string
   unitProp: UnitType | 'primaryHeader' | undefined
   headerData: Data
 }
@@ -29,9 +31,9 @@ export interface DateHeaderProps<Data> {
   unit?: keyof TimelineTimeSteps | 'primaryHeader' | undefined
   timelineUnit: SelectUnits
   labelFormat?:
-    | string
-    | (([startTime, endTime]: [Dayjs, Dayjs], unit: UnitType | 'primaryHeader', labelWidth: number) => string)
-    | undefined
+  | string
+  | (([startTime, endTime]: [Moment, Moment], unit: UnitType | 'primaryHeader', labelWidth: number) => string)
+  | undefined
   intervalRenderer?: (props: IntervalRenderer<Data>) => ReactNode
   headerData?: Data | undefined
   children?: ((props: SidebarHeaderChildrenFnProps<Data>) => ReactNode) | undefined
@@ -55,7 +57,7 @@ class DateHeaderInner<Data> extends React.Component<DateHeaderProps<Data>> {
     }
   })
 
-  getLabelFormat = (interval: [Dayjs, Dayjs], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => {
+  getLabelFormat = (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => {
     const { labelFormat } = this.props
     if (typeof labelFormat === 'string') {
       const startTime = interval[0]
@@ -142,7 +144,7 @@ export function DateHeader<Data>({
 }
 
 function formatLabel(
-  [timeStart]: [Dayjs, Dayjs],
+  [timeStart]: [Moment, Moment],
   unit: keyof typeof defaultHeaderFormats,
   labelWidth: number,
   formatOptions = defaultHeaderFormats,

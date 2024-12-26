@@ -36,12 +36,9 @@ import {
   Unit,
 } from './types/main'
 import { ItemDimension } from './types/dimension'
-import dayjs, { Dayjs } from 'dayjs'
 import { ItemProps, ResizeEdge } from './items/Item'
 import './Timeline.scss'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-
-dayjs.extend(localizedFormat)
+import { Moment } from 'moment'
 
 export type OnTimeChange<CustomItem, CustomGroup> = (
   visibleTimeStart: number,
@@ -108,11 +105,11 @@ export type ReactCalendarTimelineProps<
   itemRenderer?: ItemProps<CustomItem>['itemRenderer']
   groupRenderer?: ((props: ReactCalendarGroupRendererProps<CustomGroup>) => React.ReactNode) | undefined
   resizeDetector?:
-    | {
-        addListener?: (x: any) => void
-        removeListener: (x: any) => void
-      }
-    | undefined
+  | {
+    addListener?: (x: any) => void
+    removeListener: (x: any) => void
+  }
+  | undefined
   verticalLineClassNamesForTime?: (start: number, end: number) => string[]
   horizontalLineClassNamesForGroup?: ((group: CustomGroup) => string[]) | undefined
   buffer?: number
@@ -154,7 +151,6 @@ export default class ReactCalendarTimeline<
   ReactCalendarTimelineProps<CustomItem, CustomGroup>,
   ReactCalendarTimelineState<CustomItem, CustomGroup>
 > {
-  static setDayjsLocale = dayjs.locale
   public static defaultProps = {
     sidebarWidth: 150,
     rightSidebarWidth: 0,
@@ -523,7 +519,7 @@ export default class ReactCalendarTimeline<
     }
   }
 
-  showPeriod = (from: Dayjs, to: Dayjs) => {
+  showPeriod = (from: Moment, to: Moment) => {
     const visibleTimeStart = from.valueOf()
     const visibleTimeEnd = to.valueOf()
 

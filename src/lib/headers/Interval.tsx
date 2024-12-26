@@ -1,15 +1,15 @@
 import React, { HTMLAttributes, ReactNode } from 'react'
 import { getNextUnit, SelectUnits } from '../utility/calendar'
 import { composeEvents } from '../utility/events'
-import { Dayjs } from 'dayjs'
 import { IntervalRenderer, Interval as IntervalType, GetIntervalProps } from '../types/main'
 import { GetIntervalPropsType } from './types'
+import { Moment } from 'moment'
 
 export type IntervalProps<Data> = {
   intervalRenderer: (p: IntervalRenderer<Data>) => ReactNode
   unit: SelectUnits
   interval: IntervalType
-  showPeriod: (startTime: Dayjs, endTime: Dayjs) => void
+  showPeriod: (startTime: Moment, endTime: Moment) => void
   intervalText: string
   primaryHeader: boolean
   getIntervalProps: GetIntervalPropsType

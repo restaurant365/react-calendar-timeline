@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
+import moment from 'moment'
 import randomColor from 'randomcolor'
-import dayjs from 'dayjs'
 
 export default function (groupCount = 30, itemCount = 1000, daysInPast = 30) {
   let randomSeed = Math.floor(Math.random() * 1000)
@@ -17,14 +17,9 @@ export default function (groupCount = 30, itemCount = 1000, daysInPast = 30) {
 
   let items = []
   for (let i = 0; i < itemCount; i++) {
-    const startDate =
-      faker.date.recent({ days: daysInPast }).valueOf() +
-      daysInPast * 0.3 * 86400 * 1000
-    const startValue =
-      Math.floor(dayjs(startDate).valueOf() / 10000000) * 10000000
-    const endValue = dayjs(
-      startDate + faker.number.int({ min: 2, max: 20 }) * 15 * 60 * 1000,
-    ).valueOf()
+    const startDate = faker.date.recent({ days: daysInPast }).valueOf() + daysInPast * 0.3 * 86400 * 1000
+    const startValue = Math.floor(moment(startDate).valueOf() / 10000000) * 10000000
+    const endValue = moment(startDate + faker.number.int({ min: 2, max: 20 }) * 15 * 60 * 1000).valueOf()
 
     items.push({
       id: i + '',
@@ -41,10 +36,7 @@ export default function (groupCount = 30, itemCount = 1000, daysInPast = 30) {
           : endValue > new Date().getTime()
             ? 'right'
             : false,
-      className:
-        dayjs(startDate).day() === 6 || dayjs(startDate).day() === 0
-          ? 'item-weekend'
-          : '',
+      className: moment(startDate).day() === 6 || moment(startDate).day() === 0 ? 'item-weekend' : '',
       bgColor: randomColor({
         luminosity: 'light',
         seed: randomSeed + i,

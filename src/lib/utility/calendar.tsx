@@ -1,5 +1,4 @@
 /* eslint-disable no-var */
-import dayjs, { Dayjs } from 'dayjs'
 import { _get } from './generic'
 import { Dimension, ItemDimension } from '../types/dimension'
 import {
@@ -13,6 +12,7 @@ import {
   TimelineTimeSteps,
 } from '../types/main'
 import { ReactCalendarTimelineProps, ReactCalendarTimelineState } from '../Timeline'
+import moment, { Moment, unitOfTime } from 'moment'
 
 /**
  * Calculate the ms / pixel ratio of the timeline state
@@ -73,9 +73,9 @@ export function iterateTimes(
   end: number,
   unit: keyof TimelineTimeSteps,
   timeSteps: TimelineTimeSteps,
-  callback: (time: Dayjs, nextTime: Dayjs) => void,
+  callback: (time: Moment, nextTime: Moment) => void,
 ) {
-  let time = dayjs(start).startOf(unit)
+  let time = moment(start).startOf(unit)
 
   if (timeSteps[unit] && timeSteps[unit] > 1) {
     const value = time.get(unit)
@@ -83,10 +83,7 @@ export function iterateTimes(
   }
 
   while (time.valueOf() < end) {
-    const nextTime = dayjs(time)
-    .add(timeSteps[unit] || 1, unit as dayjs.ManipulateType)
-    .startOf(unit)
-    
+    const nextTime = moment(time).add(timeSteps[unit] || 1, unit as unitOfTime.Base).startOf(unit)
     callback(time, nextTime)
     time = nextTime
   }
@@ -300,13 +297,13 @@ export function getGroupedItems(items: ItemDimension[], groupOrders: GroupOrders
 
 export function getVisibleItems<
   CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
-  // CustomGroup extends TimelineGroupBase = TimelineGroupBase,
+// CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 >(items: CustomItem[], canvasTimeStart: number, canvasTimeEnd: number, keys: TimelineKeys) {
   const { itemTimeStartKey, itemTimeEndKey } = keys
 
   return items.filter((item) => {
-    const afterStart = dayjs(_get(item, itemTimeStartKey)).valueOf() <= canvasTimeEnd
-    const beforeEnd = dayjs(_get(item, itemTimeEndKey)).valueOf() >= canvasTimeStart
+    const afterStart = moment(_get(item, itemTimeStartKey)).valueOf() <= canvasTimeEnd
+    const beforeEnd = moment(_get(item, itemTimeEndKey)).valueOf() >= canvasTimeStart
 
     return afterStart && beforeEnd
   })
