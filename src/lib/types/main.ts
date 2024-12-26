@@ -1,8 +1,8 @@
-import { Dayjs } from 'dayjs'
 import { ReactNode, CSSProperties, HTMLProps, MouseEventHandler, Ref, Component, ReactElement } from 'react'
 import { Dimension, ItemDimension } from './dimension'
 import { ResizeEdge } from '../items/Item'
 import { SelectUnits } from '../utility/calendar'
+import { Moment } from 'moment'
 
 export type Id = number | string
 
@@ -202,14 +202,14 @@ export interface IntervalRenderer<Data> {
 }
 
 export interface Interval {
-  startTime: Dayjs
-  endTime: Dayjs
-  labelWidth: number
-  left: number
+  startTime: Moment
+  endTime: Moment
+  labelWidth?: number
+  left?: number
 }
 
 export interface HeaderContext {
-  intervals: Array<{ startTime: Dayjs; endTime: Dayjs }>
+  intervals: Array<{ startTime: Moment; endTime: Moment }>
   unit: string
 }
 
@@ -220,7 +220,7 @@ export interface CustomHeaderPropsChildrenFnProps<Data> {
   getRootProps: (propsToOverride?: { style: CSSProperties }) => {
     style: CSSProperties
   }
-  showPeriod: (startDate: Dayjs | number, endDate: Dayjs | number) => void
+  showPeriod: (startDate: Moment | number, endDate: Moment | number) => void
   data: Data
 }
 

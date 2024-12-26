@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import dayjs from 'dayjs'
 
 import Timeline from 'react-calendar-timeline'
 
 import generateFakeData from '../generate-fake-data'
+import moment from 'moment'
 
 var keys = {
   groupIdKey: 'id',
@@ -23,10 +23,10 @@ export default class App extends Component {
     super(props)
 
     const { groups, items } = generateFakeData()
-    const defaultTimeStart = dayjs()
+    const defaultTimeStart = moment()
       .startOf('day')
       .toDate()
-    const defaultTimeEnd = dayjs()
+    const defaultTimeEnd = moment()
       .startOf('day')
       .add(1, 'day')
       .toDate()
@@ -116,6 +116,7 @@ export default class App extends Component {
         defaultTimeStart={defaultTimeStart}
         defaultTimeEnd={defaultTimeEnd}
         horizontalLineClassNamesForGroup={(group) => group.root ? ["row-root"] : []}
+        resizableCanvas={true}
       />
     )
   }

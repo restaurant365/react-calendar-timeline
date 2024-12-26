@@ -1,6 +1,4 @@
 import React, { Component } from 'react'
-import dayjs from 'dayjs'
-
 import Timeline from 'react-calendar-timeline'
 import containerResizeDetector from '../../../src/resize-detector/container'
 
@@ -8,6 +6,7 @@ import containerResizeDetector from '../../../src/resize-detector/container'
 // import containerResizeDetector from 'react-calendar-timeline/lib/resize-detector/container'
 
 import generateFakeData from '../generate-fake-data'
+import moment from 'moment'
 
 var keys = {
   groupIdKey: 'id',
@@ -26,10 +25,10 @@ export default class App extends Component {
     super(props)
 
     const { groups, items } = generateFakeData(10, 200)
-    const defaultTimeStart = dayjs()
+    const defaultTimeStart = moment()
       .startOf('day')
       .toDate()
-    const defaultTimeEnd = dayjs()
+    const defaultTimeEnd = moment()
       .startOf('day')
       .add(1, 'day')
       .toDate()
@@ -74,6 +73,7 @@ export default class App extends Component {
             resizeDetector={containerResizeDetector}
             defaultTimeStart={defaultTimeStart}
             defaultTimeEnd={defaultTimeEnd}
+            resizableCanvas={true}
           />
         </div>
         <div style={{ width: `${100 - width}%`, float: 'left' }}>

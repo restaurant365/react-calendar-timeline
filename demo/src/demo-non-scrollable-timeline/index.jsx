@@ -1,13 +1,8 @@
-import React from 'react'
-import { Component } from 'react'
-
-import Timeline, { TimelineMarkers, TodayMarker, CustomMarker, CursorMarker } from '../../../src/index'
-
-import generateFakeData from '../generate-fake-data'
+/* eslint-disable no-console */
+import React, { Component } from 'react'
 import moment from 'moment'
-
-var minTime = moment().add(-6, 'months').valueOf()
-var maxTime = moment().add(6, 'months').valueOf()
+import Timeline, { TimelineMarkers, TodayMarker, CursorMarker } from 'react-calendar-timeline'
+import generateFakeData from '../generate-fake-data'
 
 var keys = {
   groupIdKey: 'id',
@@ -17,8 +12,8 @@ var keys = {
   itemTitleKey: 'title',
   itemDivTitleKey: 'title',
   itemGroupKey: 'group',
-  itemTimeStartKey: 'start_time',
-  itemTimeEndKey: 'end_time',
+  itemTimeStartKey: 'start',
+  itemTimeEndKey: 'end',
 }
 
 export default class App extends Component {
@@ -26,18 +21,12 @@ export default class App extends Component {
     super(props)
 
     const { groups, items } = generateFakeData()
-    const defaultTimeStart = moment(items[0].start_time).startOf('day').toDate().valueOf()
-    const defaultTimeEnd = moment(items[0].end_time).startOf('day').add(1, 'day').toDate().valueOf()
+    const defaultTimeStart = moment().startOf('day').toDate()
+    const defaultTimeEnd = moment().startOf('day').add(1, 'day').toDate()
 
     this.state = {
       groups,
-      items: items.map((item) => {
-        return {
-          ...item,
-          start_time: moment(item.start_time).valueOf(),
-          end_time: moment(item.end_time).valueOf(),
-        }
-      }),
+      items,
       defaultTimeStart,
       defaultTimeEnd,
     }
@@ -108,32 +97,6 @@ export default class App extends Component {
     console.log('Resized', itemId, time, edge)
   }
 
-  // this limits the timeline to -6 months ... +6 months
-  handleTimeChange = (visibleTimeStart, visibleTimeEnd, updateScrollCanvas) => {
-    if (visibleTimeStart < minTime && visibleTimeEnd > maxTime) {
-      updateScrollCanvas(minTime, maxTime)
-    } else if (visibleTimeStart < minTime) {
-      updateScrollCanvas(minTime, minTime + (visibleTimeEnd - visibleTimeStart))
-    } else if (visibleTimeEnd > maxTime) {
-      updateScrollCanvas(maxTime - (visibleTimeEnd - visibleTimeStart), maxTime)
-    } else {
-      updateScrollCanvas(visibleTimeStart, visibleTimeEnd)
-    }
-  }
-
-  handleZoom = (timelineContext, unit) => {
-    console.log('Zoomed', timelineContext, unit)
-  }
-
-  moveResizeValidator = (action, item, time) => {
-    if (time < new Date().getTime()) {
-      var newTime = Math.ceil(new Date().getTime() / (15 * 60 * 1000)) * (15 * 60 * 1000)
-      return newTime
-    }
-
-    return time
-  }
-
   render() {
     const { groups, items, defaultTimeStart, defaultTimeEnd } = this.state
 
@@ -151,6 +114,8 @@ export default class App extends Component {
         itemTouchSendsClick={false}
         stackItems
         itemHeightRatio={0.75}
+        defaultTimeStart={defaultTimeStart}
+        defaultTimeEnd={defaultTimeEnd}
         onCanvasClick={this.handleCanvasClick}
         onCanvasDoubleClick={this.handleCanvasDoubleClick}
         onCanvasContextMenu={this.handleCanvasContextMenu}
@@ -160,26 +125,11 @@ export default class App extends Component {
         onItemMove={this.handleItemMove}
         onItemResize={this.handleItemResize}
         onItemDoubleClick={this.handleItemDoubleClick}
-        onTimeChange={this.handleTimeChange}
-        onZoom={this.handleZoom}
-        moveResizeValidator={this.moveResizeValidator}
-        buffer={3}
-        minZoom={365.24 * 86400 * 1000} // 1 year
-        maxZoom={365.24 * 86400 * 1000 * 20} // 20 years
-        defaultTimeStart={defaultTimeStart}
-        defaultTimeEnd={defaultTimeEnd}
-        resizableCanvas={true}
+        resizableCanvas={false}
       >
         <TimelineMarkers>
           <TodayMarker />
-          <CustomMarker date={moment().startOf('day').valueOf() + 1000 * 60 * 60 * 2} />
-          <CustomMarker date={moment().add(3, 'day').valueOf()}>
-            {({ styles }) => {
-              const newStyles = { ...styles, backgroundColor: 'blue' }
-              return <div style={newStyles} />
-            }}
-          </CustomMarker>
-          {/* <CursorMarker />*/}
+          <CursorMarker />
         </TimelineMarkers>
       </Timeline>
     )

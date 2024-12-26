@@ -3,7 +3,7 @@ import { useTimelineHeadersContext } from './HeadersContext'
 import { useTimelineState } from '../timeline/TimelineStateContext'
 import { iterateTimes } from '../utility/calendar'
 import { Interval, TimelineTimeSteps } from '../types/main'
-import { Dayjs } from 'dayjs'
+import { Moment } from 'moment'
 import { CustomDateHeaderProps } from './CustomDateHeader'
 import isEqual from 'lodash/isEqual'
 import { GetIntervalPropsType } from './types'
@@ -17,7 +17,7 @@ export type CustomHeaderProps<Data> = {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
-  showPeriod: (start: Dayjs, end: Dayjs) => void
+  showPeriod: (start: Moment, end: Moment) => void
   headerData?: Data
   getLeftOffsetFromDate: (date: any) => number
   height: number
@@ -149,11 +149,11 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
 
   getStateAndHelpers = (): CustomDateHeaderProps<Data> => {
     const {
-      /*canvasTimeStart,
+      canvasTimeStart,
       canvasTimeEnd,
       timelineWidth,
       visibleTimeStart,
-      visibleTimeEnd,*/
+      visibleTimeEnd,
       unit,
       showPeriod,
       headerData,
@@ -161,13 +161,13 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
     //TODO: only evaluate on changing params
 
     return {
-      /*timelineContext: {
+      timelineContext: {
         timelineWidth,
         visibleTimeStart,
         visibleTimeEnd,
         canvasTimeStart,
         canvasTimeEnd,
-      },*/
+      },
       headerContext: {
         unit,
         intervals: this.state.intervals,
@@ -181,8 +181,8 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
 
   render() {
     const props = this.getStateAndHelpers()
-    const Renderer = this.props.children
-    return <Renderer {...props} />
+    return this.props.children(props)
+
   }
 }
 

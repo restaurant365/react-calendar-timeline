@@ -13,18 +13,19 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       entry: {
-        index: resolve("src", 'index.ts'),
-        styles: resolve("src/lib", 'Timeline.scss')
+        index: resolve('src', 'index.ts'),
+        styles: resolve('src/lib', 'Timeline.scss'),
+        'resize-detector': resolve('src/resize-detector', 'index.ts'),
       },
       name: 'react-calendar-timeline',
-      fileName: (format) => `react-calendar-timeline.${format}.js`
+      fileName: (format, entryName) => `react-calendar-timeline.${entryName}.${format}.js`,
     },
     rollupOptions: {
       external: ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client'],
       output: {
         globals: {
-          react: 'React'
-        }
+          react: 'React',
+        },
       },
       plugins: [
         typescriptPaths({
@@ -35,6 +36,13 @@ export default defineConfig({
           declaration: true,
         }),
       ],
+    },
+  },
+  resolve: {
+    alias: {
+      index: resolve(__dirname, 'src', 'index.ts'),
+      'react-calendar-timeline/lib/Timeline.css': resolve(__dirname, 'src/lib', 'Timeline.scss'),
+      'react-calendar-timeline/resize-detector': resolve(__dirname, 'src/resize-detector', 'index.ts'),
     },
   },
   server: {

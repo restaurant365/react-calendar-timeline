@@ -1,5 +1,4 @@
 /* eslint-disable no-var */
-import dayjs, { Dayjs } from 'dayjs'
 import { _get } from './generic'
 import { Dimension, ItemDimension } from '../types/dimension'
 import {
@@ -13,6 +12,7 @@ import {
   TimelineTimeSteps,
 } from '../types/main'
 import { ReactCalendarTimelineProps, ReactCalendarTimelineState } from '../Timeline'
+import moment, { Moment, unitOfTime } from 'moment'
 
 /**
  * Calculate the ms / pixel ratio of the timeline state
@@ -73,9 +73,9 @@ export function iterateTimes(
   end: number,
   unit: keyof TimelineTimeSteps,
   timeSteps: TimelineTimeSteps,
-  callback: (time: Dayjs, nextTime: Dayjs) => void,
+  callback: (time: Moment, nextTime: Moment) => void,
 ) {
-  let time = dayjs(start).startOf(unit)
+  let time = moment(start).startOf(unit)
 
   if (timeSteps[unit] && timeSteps[unit] > 1) {
     const value = time.get(unit)
@@ -83,7 +83,7 @@ export function iterateTimes(
   }
 
   while (time.valueOf() < end) {
-    const nextTime = dayjs(time).add(timeSteps[unit] || 1, unit as dayjs.ManipulateType)
+    const nextTime = moment(time).add(timeSteps[unit] || 1, unit as unitOfTime.Base).startOf(unit)
     callback(time, nextTime)
     time = nextTime
   }
@@ -297,13 +297,13 @@ export function getGroupedItems(items: ItemDimension[], groupOrders: GroupOrders
 
 export function getVisibleItems<
   CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
-  // CustomGroup extends TimelineGroupBase = TimelineGroupBase,
+// CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 >(items: CustomItem[], canvasTimeStart: number, canvasTimeEnd: number, keys: TimelineKeys) {
   const { itemTimeStartKey, itemTimeEndKey } = keys
 
   return items.filter((item) => {
-    const afterStart = dayjs(_get(item, itemTimeStartKey)).valueOf() <= canvasTimeEnd
-    const beforeEnd = dayjs(_get(item, itemTimeEndKey)).valueOf() >= canvasTimeStart
+    const afterStart = moment(_get(item, itemTimeStartKey)).valueOf() <= canvasTimeEnd
+    const beforeEnd = moment(_get(item, itemTimeEndKey)).valueOf() >= canvasTimeStart
 
     return afterStart && beforeEnd
   })
@@ -545,6 +545,14 @@ export function stackTimelineItems<
 }
 
 /**
+ * get canvas width factor
+ * @param {*} shouldExpandCanvas
+ */
+export function getCanvasWidthFactor(shouldExpandCanvas = true) {
+  return shouldExpandCanvas? 3 : 1;
+}
+
+/**
  * get canvas width from visible width
  * @param {*} width
  * @param {*} buffer
@@ -667,7 +675,10 @@ export function getItemWithInteractions<
  * @param {number} visibleTimeEnd
  * @param buffer
  */
-export function getCanvasBoundariesFromVisibleTime(visibleTimeStart: number, visibleTimeEnd: number, buffer: number) {
+export function getCanvasBoundariesFromVisibleTime(visibleTimeStart: number, visibleTimeEnd: number, buffer: number, shouldExpandCanvasBoundaries = true) {
+  if (!shouldExpandCanvasBoundaries) {
+    return [visibleTimeStart, visibleTimeEnd];
+  }
   const zoom = visibleTimeEnd - visibleTimeStart
   // buffer - 1 (1 is visible area) divided by 2 (2 is the buffer split on the right and left of the timeline)
   const canvasTimeStart = visibleTimeStart - (zoom * (buffer - 1)) / 2
@@ -723,6 +734,7 @@ export function calculateScrollCanvas<
       visibleTimeStart,
       visibleTimeEnd,
       buffer!,
+      props.resizableCanvas
     )
     newState.canvasTimeStart = canvasTimeStart
     newState.canvasTimeEnd = canvasTimeEnd
@@ -731,7 +743,7 @@ export function calculateScrollCanvas<
       ...newState,
     }
 
-    const canvasWidth = getCanvasWidth(mergedState.width, props.buffer!)
+    const canvasWidth = getCanvasWidth(mergedState.width, state.canvasWidthFactor)
 
     // The canvas cannot be kept, so calculate the new items position
     Object.assign(
