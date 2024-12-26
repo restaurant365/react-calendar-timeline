@@ -73,6 +73,7 @@ export default class App extends Component {
             resizeDetector={containerResizeDetector}
             defaultTimeStart={defaultTimeStart}
             defaultTimeEnd={defaultTimeEnd}
+            resizableCanvas={true}
           />
         </div>
         <div style={{ width: `${100 - width}%`, float: 'left' }}>

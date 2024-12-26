@@ -114,6 +114,7 @@ export default class App extends Component {
           defaultTimeStart={defaultTimeStart}
           defaultTimeEnd={defaultTimeEnd}
           verticalLineClassNamesForTime={this.verticalLineClassNamesForTime}
+          resizableCanvas={true}
         />
       </div>
     )

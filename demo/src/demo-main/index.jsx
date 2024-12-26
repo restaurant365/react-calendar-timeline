@@ -168,6 +168,7 @@ export default class App extends Component {
         maxZoom={365.24 * 86400 * 1000 * 20} // 20 years
         defaultTimeStart={defaultTimeStart}
         defaultTimeEnd={defaultTimeEnd}
+        resizableCanvas={true}
       >
         <TimelineMarkers>
           <TodayMarker />

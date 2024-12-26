@@ -191,6 +191,7 @@ export default class App extends Component {
           buffer={1}
           onTimeChange={this.handleTimeChange}
           // moveResizeValidator={this.moveResizeValidator}
+          resizableCanvas={true}
         >
           <TimelineMarkers>
             <TodayMarker />

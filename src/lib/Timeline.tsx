@@ -13,6 +13,7 @@ import {
   getCanvasBoundariesFromVisibleTime,
   getCanvasWidth,
   stackTimelineItems,
+  getCanvasWidthFactor,
 } from './utility/calendar'
 import { _get } from './utility/generic'
 import { defaultKeys, defaultTimeSteps } from './default-config'
@@ -117,6 +118,7 @@ export type ReactCalendarTimelineProps<
   headerRef?: (el: HTMLDivElement) => void
   className?: string
   style?: React.CSSProperties
+  resizableCanvas: boolean
 }
 
 export type ReactCalendarTimelineState<
@@ -142,6 +144,7 @@ export type ReactCalendarTimelineState<
   height: number
   groupHeights: number[]
   groupTops: number[]
+  canvasWidthFactor: number
 }
 
 export default class ReactCalendarTimeline<
@@ -203,8 +206,8 @@ export default class ReactCalendarTimeline<
     className: '',
     keys: defaultKeys,
     timeSteps: defaultTimeSteps,
-    headerRef: () => {},
-    scrollRef: () => {},
+    headerRef: () => { },
+    scrollRef: () => { },
 
     // if you pass in visibleTimeStart and visibleTimeEnd, you must also pass onTimeChange(visibleTimeStart, visibleTimeEnd),
     // which needs to update the props visibleTimeStart and visibleTimeEnd to the ones passed
@@ -225,9 +228,9 @@ export default class ReactCalendarTimeline<
   }
 
   getTimelineContext = (): TimelineContext => {
-    const { width, visibleTimeStart, visibleTimeEnd, canvasTimeStart, canvasTimeEnd } = this.state
+    const { width, visibleTimeStart, visibleTimeEnd, canvasTimeStart, canvasTimeEnd, canvasWidthFactor } = this.state
     const zoom = visibleTimeEnd - visibleTimeStart
-    const canvasWidth = getCanvasWidth(width, this.props.buffer!)
+    const canvasWidth = getCanvasWidth(width, canvasWidthFactor)
     const minUnit = getMinUnit(zoom, width, this.props.timeSteps)
     return {
       canvasWidth,
@@ -280,6 +283,7 @@ export default class ReactCalendarTimeline<
       visibleTimeStart,
       visibleTimeEnd,
       props.buffer!,
+      this.props.resizableCanvas
     )
     const state: Partial<ReactCalendarTimelineState> = {
       width: 1000,
@@ -294,8 +298,9 @@ export default class ReactCalendarTimeline<
       resizingItem: null,
       resizingEdge: null,
       newGroupOrder: 0, //CHECK
+      canvasWidthFactor: getCanvasWidthFactor(this.props.resizableCanvas)
     }
-    const canvasWidth = getCanvasWidth(state.width!, props.buffer!)
+    const canvasWidth = getCanvasWidth(state.width!, state.canvasWidthFactor!)
     const { dimensionItems, height, groupHeights, groupTops } = stackTimelineItems(
       props.items,
       props.groups,
@@ -360,7 +365,7 @@ export default class ReactCalendarTimeline<
       )
     } else if (forceUpdate) {
       // Calculate new item stack position as canvas may have changed
-      const canvasWidth = getCanvasWidth(prevState.width, nextProps.buffer!)
+      const canvasWidth = getCanvasWidth(prevState.width, prevState.canvasWidthFactor)
       Object.assign(
         derivedState,
         stackTimelineItems(
@@ -400,7 +405,7 @@ export default class ReactCalendarTimeline<
 
     // The bounds have changed? Report it!
     if (this.props.onBoundsChange && this.state.canvasTimeStart !== prevState.canvasTimeStart) {
-      this.props.onBoundsChange(this.state.canvasTimeStart, this.state.canvasTimeStart + newZoom * 3)
+      this.props.onBoundsChange(this.state.canvasTimeStart, this.state.canvasTimeStart + newZoom * getCanvasWidthFactor(this.props.resizableCanvas))
     }
 
     // Check the scroll is correct
@@ -411,7 +416,7 @@ export default class ReactCalendarTimeline<
       (prevState.width * (prevState.visibleTimeStart - prevState.canvasTimeStart)) / oldZoom,
     )
 
-    if (componentScrollLeft !== scrollLeft  || this.scrollComponent!.scrollLeft !== scrollLeft) {
+    if (componentScrollLeft !== scrollLeft || this.scrollComponent!.scrollLeft !== scrollLeft) {
       this.scrollComponent!.scrollLeft = scrollLeft
       this.scrollHeaderRef!.scrollLeft = scrollLeft
     }
@@ -421,7 +426,7 @@ export default class ReactCalendarTimeline<
     const { width: containerWidth } = this.container.current?.getBoundingClientRect() ?? { width: 0 }
 
     const width = containerWidth - props.sidebarWidth - props.rightSidebarWidth
-    const canvasWidth = getCanvasWidth(width, props.buffer!)
+    const canvasWidth = getCanvasWidth(width, this.state.canvasWidthFactor)
     const { dimensionItems, height, groupHeights, groupTops } = stackTimelineItems(
       props.items,
       props.groups,
@@ -450,6 +455,10 @@ export default class ReactCalendarTimeline<
       groupHeights,
       groupTops,
     })
+
+    if (!this.props.resizableCanvas) {
+      return;
+    }
     //initial scroll left is the buffer - 1 (1 is visible area) divided by 2 (2 is the buffer split on the right and left of the timeline)
     const scrollLeft = width * ((props.buffer! - 1) / 2)
     if (this.scrollComponent) {
@@ -461,6 +470,9 @@ export default class ReactCalendarTimeline<
   }
 
   onScroll = (scrollX: number) => {
+    if (!this.props.resizableCanvas) {
+      return;
+    }
     const width = this.state.width
 
     const canvasTimeStart = this.state.canvasTimeStart
@@ -505,6 +517,10 @@ export default class ReactCalendarTimeline<
   }
 
   changeZoom = (scale: number, offset = 0.5) => {
+    if (!this.props.resizableCanvas) {
+      return;
+    }
+
     const { minZoom, maxZoom } = this.props
     const oldZoom = this.state.visibleTimeEnd - this.state.visibleTimeStart
     const newZoom = Math.min(Math.max(Math.round(oldZoom * scale), minZoom), maxZoom) // min 1 min, max 20 years
@@ -572,8 +588,8 @@ export default class ReactCalendarTimeline<
   // from.  Look to consolidate the logic for determining coordinate to time
   // as well as generalizing how we get time from click on the canvas
   getTimeFromRowClickEvent = (e: MouseEvent<HTMLDivElement>) => {
-    const { dragSnap, buffer } = this.props
-    const { width, canvasTimeStart, canvasTimeEnd } = this.state
+    const { dragSnap } = this.props
+    const { width, canvasTimeStart, canvasTimeEnd, canvasWidthFactor } = this.state
     // this gives us distance from left of row element, so event is in
     // context of the row element, not client or page
     const { offsetX } = e.nativeEvent
@@ -582,7 +598,7 @@ export default class ReactCalendarTimeline<
       canvasTimeStart,
 
       canvasTimeEnd,
-      getCanvasWidth(width, buffer!),
+      getCanvasWidth(width, canvasWidthFactor),
       offsetX,
     )
     time = Math.floor(time / dragSnap!) * dragSnap!
@@ -947,13 +963,13 @@ export default class ReactCalendarTimeline<
   container = React.createRef<HTMLDivElement>()
 
   render() {
-    const { items, groups, sidebarWidth, rightSidebarWidth, timeSteps, traditionalZoom, buffer } = this.props
-    const { draggingItem, resizingItem, width, visibleTimeStart, visibleTimeEnd, canvasTimeStart, canvasTimeEnd } =
+    const { items, groups, sidebarWidth, rightSidebarWidth, timeSteps, traditionalZoom } = this.props
+    const { draggingItem, resizingItem, width, visibleTimeStart, visibleTimeEnd, canvasTimeStart, canvasTimeEnd, canvasWidthFactor } =
       this.state
     let { dimensionItems, height, groupHeights, groupTops } = this.state
 
     const zoom = visibleTimeEnd - visibleTimeStart
-    const canvasWidth = getCanvasWidth(width, buffer!)
+    const canvasWidth = getCanvasWidth(width, canvasWidthFactor)
     const minUnit = getMinUnit(zoom, width, timeSteps)
 
     const isInteractingWithItem = !!draggingItem || !!resizingItem

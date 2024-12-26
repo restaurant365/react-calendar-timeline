@@ -121,8 +121,7 @@ export default class App extends Component {
 
   moveResizeValidator = (action, item, time) => {
     if (time < new Date().getTime()) {
-      var newTime =
-        Math.ceil(new Date().getTime() / (15 * 60 * 1000)) * (15 * 60 * 1000)
+      var newTime = Math.ceil(new Date().getTime() / (15 * 60 * 1000)) * (15 * 60 * 1000)
       return newTime
     }
 
@@ -182,6 +181,7 @@ export default class App extends Component {
         onItemDoubleClick={this.handleItemDoubleClick}
         onTimeChange={this.handleTimeChange}
         moveResizeValidator={this.moveResizeValidator}
+        resizableCanvas={true}
       />
     )
   }
