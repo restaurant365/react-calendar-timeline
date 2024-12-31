@@ -1,5 +1,5 @@
 {
-  "name": "react-calendar-timeline",
+  "name": "@r365/react-calendar-timeline",
   "version": "0.30.2",
   "description": "react-calendar-timeline",
   "packageManager": "npm@10.1.0",
@@ -26,10 +26,10 @@
   "files": [
     "dist"
   ],
-  "homepage": "https://github.com/namespace-ee/react-calendar-timeline",
+  "homepage": "https://github.com/restaurant365/react-calendar-timeline",
   "repository": {
     "type": "git",
-    "url": "https://github.com/namespace-ee/react-calendar-timeline.git"
+    "url": "git+https://github.com/restaurant365/react-calendar-timeline.git"
   },
   "private": false,
   "author": "Marius Andra <marius.andra@gmail.com>",
