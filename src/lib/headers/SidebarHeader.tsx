@@ -3,7 +3,7 @@ import { useTimelineHeadersContext } from './HeadersContext'
 import { LEFT_VARIANT, RIGHT_VARIANT } from './constants'
 
 type SidebarHeaderProps = {
-children: (props: { getRootProps: GetRootProps; data: any }) => ReactNode
+  children: (props: { getRootProps: GetRootProps; data: any }) => ReactNode
   rightSidebarWidth?: number
   leftSidebarWidth: number
   variant: typeof LEFT_VARIANT | typeof RIGHT_VARIANT
@@ -38,7 +38,7 @@ class SidebarHeader extends PureComponent<SidebarHeaderProps> {
 type GetRootProps = () => HTMLProps<HTMLDivElement>
 
 export type SidebarWrapperProps = {
-children?: (props: { getRootProps: GetRootProps; data: any }) => ReactNode
+  children?: (props: { getRootProps: GetRootProps; data: any }) => ReactNode
   variant?: typeof LEFT_VARIANT | typeof RIGHT_VARIANT
   headerData?: any
 }
