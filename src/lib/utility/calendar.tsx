@@ -311,9 +311,8 @@ export function getVisibleItems<
 
 const EPSILON = 0.001
 
-export function collision(a: Dimension, b: Dimension, collisionPadding: number = EPSILON) {
+export function collision(a: Dimension, b: Dimension, verticalMargin : number, collisionPadding: number = EPSILON) {
   // 2d collisions detection - https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
-  const verticalMargin = 0
 
   return (
     a.collisionLeft + collisionPadding < b.collisionLeft + b.collisionWidth &&
@@ -334,13 +333,14 @@ export function groupStack(
   groupHeight: number,
   groupTop: number,
   itemIndex: number,
+  itemVerticalGap: number | undefined,
 ): GroupStack {
   // calculate non-overlapping positions
   let curHeight = groupHeight
-  const verticalMargin = (lineHeight - item.dimensions.height) / 2
+  const verticalMargin = itemVerticalGap ?? (lineHeight - item.dimensions.height) / 2
   if (item.dimensions.stack && item.dimensions.top === null) {
     item.dimensions.top = groupTop + verticalMargin
-    curHeight = Math.max(curHeight, lineHeight)
+    curHeight = Math.max(curHeight, lineHeight, item.dimensions.height + verticalMargin * 2)
     do {
       // converting it to a const create an infinite loop (why?)
       // noinspection ES6ConvertVarToLetConst
@@ -348,7 +348,7 @@ export function groupStack(
       //Items are placed from i=0 onwards, only check items with index < i
       for (let j = itemIndex - 1, jj = 0; j >= jj; j--) {
         const other = group[j]
-        if (other.dimensions.top !== null && other.dimensions.stack && collision(item.dimensions, other.dimensions)) {
+        if (other.dimensions.top !== null && other.dimensions.stack && collision(item.dimensions, other.dimensions, verticalMargin)) {
           collidingItem = other
           break
         } else {
@@ -358,7 +358,11 @@ export function groupStack(
 
       if (collidingItem != null) {
         // There is a collision. Reposition the items above the colliding element
-        item.dimensions.top = collidingItem.dimensions.top! + lineHeight
+        item.dimensions.top =
+          collidingItem.dimensions.top! +
+          collidingItem.dimensions.height +
+          /* backward compatibility where gap between items is 2 */
+          verticalMargin * (itemVerticalGap !== undefined ? 1 : 2)
         curHeight = Math.max(curHeight, item.dimensions.top + item.dimensions.height + verticalMargin - groupTop)
       }
     } while (collidingItem)
@@ -376,11 +380,12 @@ export function groupNoStack(
   item: ItemDimension,
   groupHeight: number,
   groupTop: number,
+  itemVerticalGap: number | undefined,
 ): GroupStack {
-  const verticalMargin = (lineHeight - (item.dimensions?.height ?? 1)) / 2
+  const verticalMargin = itemVerticalGap ?? (lineHeight - (item.dimensions?.height ?? 1)) / 2
   if (item.dimensions && item.dimensions.top === null) {
     item.dimensions.top = groupTop + verticalMargin
-    groupHeight = Math.max(groupHeight, lineHeight)
+    groupHeight = Math.max(groupHeight, lineHeight, item.dimensions.height + verticalMargin);
   }
   return { groupHeight, verticalMargin: 0, itemTop: item.dimensions?.top ?? 0 }
 }
@@ -401,6 +406,7 @@ export function stackAll(
   groupOrders: GroupOrders,
   lineHeight: number,
   stackItems: boolean,
+  itemVerticalGap: number | undefined,
 ) {
   const groupHeights: number[] = []
   const groupTops: number[] = []
@@ -414,7 +420,7 @@ export function stackAll(
 
     // Is group being stacked?
     const isGroupStacked = group.stackItems !== undefined ? group.stackItems : stackItems
-    const { groupHeight } = stackGroup(itemsDimensions, isGroupStacked, lineHeight, groupTop)
+    const { groupHeight } = stackGroup(itemsDimensions, isGroupStacked, lineHeight, groupTop, itemVerticalGap)
     // If group height is overridden, push new height
     // Do this late as item position still needs to be calculated
     groupTops.push(groupTop)
@@ -444,14 +450,15 @@ export function stackGroup(
   isGroupStacked: boolean,
   lineHeight: number,
   groupTop: number,
+  itemVerticalGap: number | undefined,
 ) {
   let groupHeight = 0
   let verticalMargin = 0
   // Find positions for each item in group
   for (let itemIndex = 0; itemIndex < itemsDimensions.length; itemIndex++) {
     const r = isGroupStacked
-      ? groupStack(lineHeight, itemsDimensions[itemIndex], itemsDimensions, groupHeight, groupTop, itemIndex)
-      : groupNoStack(lineHeight, itemsDimensions[itemIndex], groupHeight, groupTop)
+      ? groupStack(lineHeight, itemsDimensions[itemIndex], itemsDimensions, groupHeight, groupTop, itemIndex, itemVerticalGap)
+      : groupNoStack(lineHeight, itemsDimensions[itemIndex], groupHeight, groupTop, itemVerticalGap)
 
     groupHeight = r.groupHeight
     verticalMargin = r.verticalMargin
@@ -477,6 +484,7 @@ export function stackGroup(
  * @param {left or right} resizingEdge
  * @param {number} resizeTime
  * @param {number} newGroupOrder
+ * @param {number} itemVerticalGap
  */
 export function stackTimelineItems<
   CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
@@ -497,6 +505,7 @@ export function stackTimelineItems<
   resizingEdge: 'left' | 'right' | null,
   resizeTime: number | null,
   newGroupOrder: number,
+  itemVerticalGap: number | undefined,
 ) {
   const visibleItems = getVisibleItems(items, canvasTimeStart, canvasTimeEnd, keys)
   const visibleItemsWithInteraction = visibleItems.map((item) =>
@@ -536,11 +545,12 @@ export function stackTimelineItems<
         groupOrders,
         lineHeight,
         itemHeightRatio,
+        itemVerticalGap,
       }),
     )
     .filter((item) => !!item) as ItemDimension[]
   // Get a new array of groupOrders holding the stacked items
-  const { height, groupHeights, groupTops } = stackAll(dimensionItems, groupOrders, lineHeight, stackItems)
+  const { height, groupHeights, groupTops } = stackAll(dimensionItems, groupOrders, lineHeight, stackItems, itemVerticalGap)
   return { dimensionItems, height, groupHeights, groupTops }
 }
 
@@ -581,6 +591,7 @@ export function getItemDimensions<CustomItem extends TimelineItemBase<any>>({
   groupOrders,
   lineHeight,
   itemHeightRatio,
+  itemVerticalGap,
 }: {
   item: CustomItem
   keys: TimelineKeys
@@ -590,6 +601,7 @@ export function getItemDimensions<CustomItem extends TimelineItemBase<any>>({
   groupOrders: GroupOrders
   lineHeight: number
   itemHeightRatio: number
+  itemVerticalGap: number | undefined
 }): ItemDimension | undefined {
   const itemId = _get(item, keys.itemIdKey)
   const dimension = calculateDimensions({
@@ -603,7 +615,7 @@ export function getItemDimensions<CustomItem extends TimelineItemBase<any>>({
     dimension.top = null
     dimension.order = groupOrders[_get(item, keys.itemGroupKey)]
     dimension.stack = !item.isOverlay
-    dimension.height = lineHeight * itemHeightRatio
+    dimension.height = (item.height || lineHeight) * (typeof itemVerticalGap === 'undefined' ? itemHeightRatio : 1)
     return {
       id: itemId,
       dimensions: dimension as Dimension,
@@ -764,6 +776,7 @@ export function calculateScrollCanvas<
         mergedState.resizingEdge,
         mergedState.resizeTime,
         mergedState.newGroupOrder,
+        props.itemVerticalGap,
       ),
     )
   }
