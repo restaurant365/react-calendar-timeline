@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres (more or less) to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+
+## 0.30.3
 * Added support for dynamic item sizing with an optional per-item `height` override prop.
 * Introduced `itemVerticalGap` timeline prop to ensure consistent spacing between timeline items, which takes precedence over the `itemHeightRatio` setting when specified.
 
