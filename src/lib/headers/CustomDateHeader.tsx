@@ -1,7 +1,6 @@
 import React from 'react'
 import Interval from './Interval'
-import { Interval as IntervalType, IntervalRenderer } from '../types/main'
-import { Moment } from 'moment'
+import { Interval as IntervalType, IntervalRenderer, TimelineDate } from '../types/main'
 import { SelectUnits } from '../utility/calendar'
 import { GetIntervalPropsType } from './types'
 
@@ -16,15 +15,16 @@ export interface CustomDateHeaderProps<Data> {
     visibleTimeEnd: number
     canvasTimeStart: number
     canvasTimeEnd: number
+    timezone: string
   }
   getRootProps: (props?: any) => any
   getIntervalProps: GetIntervalPropsType
-  showPeriod: (start: Moment, end: Moment) => void
+  showPeriod: (start: TimelineDate, end: TimelineDate) => void
   data: {
     style: React.CSSProperties
     intervalRenderer: (props: IntervalRenderer<Data>) => React.ReactNode
     className?: string
-    getLabelFormat: (interval: [Moment, Moment], unit: string, labelWidth: number) => string
+    getLabelFormat: (interval: [TimelineDate, TimelineDate], unit: string, labelWidth: number) => string
     unitProp?: 'primaryHeader'
     headerData?: Data
   }
@@ -43,7 +43,7 @@ export function CustomDateHeader<Data>({
         const intervalText = getLabelFormat([interval.startTime, interval.endTime], unit, interval.labelWidth!)
         return (
           <Interval
-            key={`label-${interval.startTime.valueOf()}`}
+            key={`label-${interval.startTime.epochMilliseconds}`}
             unit={unit}
             interval={interval}
             showPeriod={showPeriod}

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres (more or less) to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Replace moment.js with Temporal API for improved timezone support and better date/time handling
+* Add `timezone` prop to Timeline component to specify the timezone for date calculations and display
+* Enhanced timezone-aware date formatting and calculations throughout the component
 
 ## 0.30.3
 * Added support for dynamic item sizing with an optional per-item `height` override prop.
@@ -13,7 +16,7 @@ and this project adheres (more or less) to [Semantic Versioning](http://semver.o
 
 ## 0.30.0 (beta)
 Huge update made by @Remco4EF and @remcoblumink
- * full rewrite to typescript 
+ * full rewrite to typescript
  * uses Vite as bundler
  * Updates dependencies to latest versions
  * Updates react usage to 18+

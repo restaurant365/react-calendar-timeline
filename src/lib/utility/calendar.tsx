@@ -1,18 +1,99 @@
 /* eslint-disable no-var */
-import { _get } from './generic'
+import { Temporal } from '@js-temporal/polyfill'
+import { ReactCalendarTimelineProps, ReactCalendarTimelineState } from '../Timeline'
 import { Dimension, ItemDimension } from '../types/dimension'
 import {
   GroupedItem,
   GroupOrders,
   GroupStack,
   Id,
+  TimelineDate,
   TimelineGroupBase,
   TimelineItemBase,
   TimelineKeys,
   TimelineTimeSteps,
 } from '../types/main'
-import { ReactCalendarTimelineProps, ReactCalendarTimelineState } from '../Timeline'
-import moment, { Moment, unitOfTime } from 'moment'
+import { _get } from './generic'
+
+export function toTimelineDate(epochMilliseconds: number, timeZone: string): TimelineDate {
+  return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(timeZone)
+}
+
+function addToTimelineDate(date: TimelineDate, amount: number, unit: keyof TimelineTimeSteps): TimelineDate {
+  const durationKey = `${unit}s` as const satisfies keyof Temporal.DurationLike
+  return date.add({ [durationKey]: amount })
+}
+
+export function getStartOfUnit(date: TimelineDate, unit: keyof TimelineTimeSteps): TimelineDate {
+  const START_OF_SECONDS: Temporal.ZonedDateTimeLike = { millisecond: 0, microsecond: 0, nanosecond: 0 }
+
+  switch (unit) {
+    case 'year':
+      return date.with({ ...START_OF_SECONDS, second: 0, minute: 0, hour: 0, day: 1, month: 1 })
+    case 'month':
+      return date.with({ ...START_OF_SECONDS, second: 0, minute: 0, hour: 0, day: 1 })
+    case 'day':
+      return date.with({ ...START_OF_SECONDS, second: 0, minute: 0, hour: 0 })
+    case 'hour':
+      return date.with({ ...START_OF_SECONDS, second: 0, minute: 0 })
+    case 'minute':
+      return date.with({ ...START_OF_SECONDS, second: 0 })
+    case 'second':
+      return date.with(START_OF_SECONDS)
+    default:
+      return date
+  }
+}
+
+export function getEndOfUnit(date: TimelineDate, unit: keyof TimelineTimeSteps): TimelineDate {
+  const nextUnitStart = getStartOfUnit(addToTimelineDate(date, 1, unit), unit)
+  return nextUnitStart.subtract({ milliseconds: 1 })
+}
+
+export function alignTimelineDateToStep(date: TimelineDate, unit: keyof TimelineTimeSteps, step: number): TimelineDate {
+  if (step <= 1) {
+    return date
+  }
+
+  const remainder = date[unit] % step
+  if (remainder === 0) {
+    return date
+  }
+
+  return getStartOfUnit(addToTimelineDate(date, -remainder, unit), unit)
+}
+
+export function toEpochMilliseconds(value: unknown): number {
+  if (typeof value === 'number') {
+    return value
+  }
+
+  if (value instanceof Temporal.ZonedDateTime || value instanceof Temporal.Instant) {
+    return value.epochMilliseconds as number
+  }
+
+  if (value instanceof Date) {
+    return value.valueOf()
+  }
+
+  if (typeof value === 'object' && value !== null && 'valueOf' in value && typeof value.valueOf === 'function') {
+    const epoch = value.valueOf()
+    if (typeof epoch === 'number') {
+      return epoch
+    }
+  }
+
+  throw new Error('Unable to convert value to epoch milliseconds')
+}
+
+export function getTimezoneOffsetMs(timezone: Temporal.TimeZoneLike) {
+  try {
+    const offsetNanoseconds = Temporal.Now.instant().toZonedDateTimeISO(timezone).offsetNanoseconds
+    return offsetNanoseconds / 1_000_000
+  } catch {
+    return 0
+  }
+}
 
 /**
  * Calculate the ms / pixel ratio of the timeline state
@@ -73,17 +154,14 @@ export function iterateTimes(
   end: number,
   unit: keyof TimelineTimeSteps,
   timeSteps: TimelineTimeSteps,
-  callback: (time: Moment, nextTime: Moment) => void,
+  timeZone: string,
+  callback: (time: TimelineDate, nextTime: TimelineDate) => void,
 ) {
-  let time = moment(start).startOf(unit)
+  const step = timeSteps[unit] || 1
+  let time = alignTimelineDateToStep(getStartOfUnit(toTimelineDate(start, timeZone), unit), unit, step)
 
-  if (timeSteps[unit] && timeSteps[unit] > 1) {
-    const value = time.get(unit)
-    time.set(unit, value - (value % timeSteps[unit]))
-  }
-
-  while (time.valueOf() < end) {
-    const nextTime = moment(time).add(timeSteps[unit] || 1, unit as unitOfTime.Base).startOf(unit)
+  while (time.epochMilliseconds < end) {
+    const nextTime = getStartOfUnit(addToTimelineDate(time, step, unit), unit)
     callback(time, nextTime)
     time = nextTime
   }
@@ -206,6 +284,7 @@ export function calculateInteractionNewTimes({
   const originalItemRange = itemTimeEnd - itemTimeStart
   const itemStart = isResizing && resizingEdge === 'left' && resizeTime ? resizeTime : itemTimeStart
   const itemEnd = isResizing && resizingEdge === 'right' && resizeTime ? resizeTime : itemTimeEnd
+
   return [
     isDragging && dragTime ? dragTime : itemStart,
     isDragging && dragTime ? dragTime + originalItemRange : itemEnd,
@@ -297,21 +376,21 @@ export function getGroupedItems(items: ItemDimension[], groupOrders: GroupOrders
 
 export function getVisibleItems<
   CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
-// CustomGroup extends TimelineGroupBase = TimelineGroupBase,
+  // CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 >(items: CustomItem[], canvasTimeStart: number, canvasTimeEnd: number, keys: TimelineKeys) {
   const { itemTimeStartKey, itemTimeEndKey } = keys
 
   return items.filter((item) => {
-    const afterStart = moment(_get(item, itemTimeStartKey)).valueOf() <= canvasTimeEnd
-    const beforeEnd = moment(_get(item, itemTimeEndKey)).valueOf() >= canvasTimeStart
+    const itemStart = toEpochMilliseconds(_get(item, itemTimeStartKey))
+    const itemEnd = toEpochMilliseconds(_get(item, itemTimeEndKey))
 
-    return afterStart && beforeEnd
+    return itemStart <= canvasTimeEnd && itemEnd >= canvasTimeStart
   })
 }
 
 const EPSILON = 0.001
 
-export function collision(a: Dimension, b: Dimension, verticalMargin : number, collisionPadding: number = EPSILON) {
+export function collision(a: Dimension, b: Dimension, verticalMargin: number, collisionPadding: number = EPSILON) {
   // 2d collisions detection - https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 
   return (
@@ -348,7 +427,11 @@ export function groupStack(
       //Items are placed from i=0 onwards, only check items with index < i
       for (let j = itemIndex - 1, jj = 0; j >= jj; j--) {
         const other = group[j]
-        if (other.dimensions.top !== null && other.dimensions.stack && collision(item.dimensions, other.dimensions, verticalMargin)) {
+        if (
+          other.dimensions.top !== null &&
+          other.dimensions.stack &&
+          collision(item.dimensions, other.dimensions, verticalMargin)
+        ) {
           collidingItem = other
           break
         } else {
@@ -385,7 +468,7 @@ export function groupNoStack(
   const verticalMargin = itemVerticalGap ?? (lineHeight - (item.dimensions?.height ?? 1)) / 2
   if (item.dimensions && item.dimensions.top === null) {
     item.dimensions.top = groupTop + verticalMargin
-    groupHeight = Math.max(groupHeight, lineHeight, item.dimensions.height + verticalMargin);
+    groupHeight = Math.max(groupHeight, lineHeight, item.dimensions.height + verticalMargin)
   }
   return { groupHeight, verticalMargin: 0, itemTop: item.dimensions?.top ?? 0 }
 }
@@ -457,7 +540,15 @@ export function stackGroup(
   // Find positions for each item in group
   for (let itemIndex = 0; itemIndex < itemsDimensions.length; itemIndex++) {
     const r = isGroupStacked
-      ? groupStack(lineHeight, itemsDimensions[itemIndex], itemsDimensions, groupHeight, groupTop, itemIndex, itemVerticalGap)
+      ? groupStack(
+          lineHeight,
+          itemsDimensions[itemIndex],
+          itemsDimensions,
+          groupHeight,
+          groupTop,
+          itemIndex,
+          itemVerticalGap,
+        )
       : groupNoStack(lineHeight, itemsDimensions[itemIndex], groupHeight, groupTop, itemVerticalGap)
 
     groupHeight = r.groupHeight
@@ -550,7 +641,13 @@ export function stackTimelineItems<
     )
     .filter((item) => !!item) as ItemDimension[]
   // Get a new array of groupOrders holding the stacked items
-  const { height, groupHeights, groupTops } = stackAll(dimensionItems, groupOrders, lineHeight, stackItems, itemVerticalGap)
+  const { height, groupHeights, groupTops } = stackAll(
+    dimensionItems,
+    groupOrders,
+    lineHeight,
+    stackItems,
+    itemVerticalGap,
+  )
   return { dimensionItems, height, groupHeights, groupTops }
 }
 
@@ -559,7 +656,7 @@ export function stackTimelineItems<
  * @param {*} shouldExpandCanvas
  */
 export function getCanvasWidthFactor(shouldExpandCanvas = true) {
-  return shouldExpandCanvas? 3 : 1;
+  return shouldExpandCanvas ? 3 : 1
 }
 
 /**
@@ -605,8 +702,8 @@ export function getItemDimensions<CustomItem extends TimelineItemBase<any>>({
 }): ItemDimension | undefined {
   const itemId = _get(item, keys.itemIdKey)
   const dimension = calculateDimensions({
-    itemTimeStart: _get(item, keys.itemTimeStartKey),
-    itemTimeEnd: _get(item, keys.itemTimeEndKey),
+    itemTimeStart: toEpochMilliseconds(_get(item, keys.itemTimeStartKey)),
+    itemTimeEnd: toEpochMilliseconds(_get(item, keys.itemTimeEndKey)),
     canvasTimeStart,
     canvasTimeEnd,
     canvasWidth,
@@ -665,8 +762,8 @@ export function getItemWithInteractions<
   const isDragging = itemId === draggingItem
   const isResizing = itemId === resizingItem
   const [itemTimeStart, itemTimeEnd] = calculateInteractionNewTimes({
-    itemTimeStart: _get(item, keys.itemTimeStartKey),
-    itemTimeEnd: _get(item, keys.itemTimeEndKey),
+    itemTimeStart: toEpochMilliseconds(_get(item, keys.itemTimeStartKey)),
+    itemTimeEnd: toEpochMilliseconds(_get(item, keys.itemTimeEndKey)),
     isDragging,
     isResizing,
     dragTime,
@@ -675,8 +772,8 @@ export function getItemWithInteractions<
   })
   return {
     ...item,
-    [keys.itemTimeStartKey]: itemTimeStart,
-    [keys.itemTimeEndKey]: itemTimeEnd,
+    [keys.itemTimeStartKey]: Temporal.Instant.fromEpochMilliseconds(itemTimeStart),
+    [keys.itemTimeEndKey]: Temporal.Instant.fromEpochMilliseconds(itemTimeEnd),
     [keys.itemGroupKey]: isDragging ? _get(groups[newGroupOrder], keys.groupIdKey) : _get(item, keys.itemGroupKey),
   }
 }
@@ -687,9 +784,14 @@ export function getItemWithInteractions<
  * @param {number} visibleTimeEnd
  * @param buffer
  */
-export function getCanvasBoundariesFromVisibleTime(visibleTimeStart: number, visibleTimeEnd: number, buffer: number, shouldExpandCanvasBoundaries = true) {
+export function getCanvasBoundariesFromVisibleTime(
+  visibleTimeStart: number,
+  visibleTimeEnd: number,
+  buffer: number,
+  shouldExpandCanvasBoundaries = true,
+) {
   if (!shouldExpandCanvasBoundaries) {
-    return [visibleTimeStart, visibleTimeEnd];
+    return [visibleTimeStart, visibleTimeEnd]
   }
   const zoom = visibleTimeEnd - visibleTimeStart
   // buffer - 1 (1 is visible area) divided by 2 (2 is the buffer split on the right and left of the timeline)
@@ -746,7 +848,7 @@ export function calculateScrollCanvas<
       visibleTimeStart,
       visibleTimeEnd,
       buffer!,
-      props.resizableCanvas
+      props.resizableCanvas,
     )
     newState.canvasTimeStart = canvasTimeStart
     newState.canvasTimeEnd = canvasTimeEnd

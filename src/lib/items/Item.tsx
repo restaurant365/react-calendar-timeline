@@ -13,7 +13,7 @@ import interact from 'interactjs'
 import { _get } from '../utility/generic'
 import { composeEvents } from '../utility/events'
 import { defaultItemRenderer } from './defaultItemRenderer'
-import { coordinateToTimeRatio } from '../utility/calendar'
+import { coordinateToTimeRatio, getTimezoneOffsetMs, toEpochMilliseconds } from '../utility/calendar'
 import { getSumOffset, getSumScroll } from '../utility/dom-helpers'
 import {
   leftResizeStyle,
@@ -29,7 +29,7 @@ import {
 import { Id, ItemContext, TimelineItemBase, TimelineKeys } from '../types/main'
 import { TimelineContext, TimelineContextType } from '../timeline/TimelineStateContext'
 import isEqual from 'lodash/isEqual'
-import moment from 'moment'
+import { Temporal } from '@js-temporal/polyfill'
 
 export type ResizeEdge = 'left' | 'right'
 
@@ -68,6 +68,7 @@ export type ItemProps<CustomItem extends TimelineItemBase<number>> = {
   canResizeRight: any
 
   keys: TimelineKeys
+  timezone: string
   item: CustomItem
 
   onSelect: OnSelect
@@ -190,8 +191,10 @@ export default class Item<CustomItem extends TimelineItemBase<number>> extends C
     this.itemId = _get(props.item, props.keys.itemIdKey)
     this.itemTitle = _get(props.item, props.keys.itemTitleKey)
     this.itemDivTitle = props.keys.itemDivTitleKey ? _get(props.item, props.keys.itemDivTitleKey) : this.itemTitle
-    this.itemTimeStart = _get(props.item, props.keys.itemTimeStartKey)
-    this.itemTimeEnd = _get(props.item, props.keys.itemTimeEndKey)
+    const startValue = _get(props.item, props.keys.itemTimeStartKey) as number | Temporal.ZonedDateTime
+    const endValue = _get(props.item, props.keys.itemTimeEndKey) as number | Temporal.ZonedDateTime
+    this.itemTimeStart = startValue !== null ? toEpochMilliseconds(startValue) : undefined
+    this.itemTimeEnd = endValue !== null ? toEpochMilliseconds(endValue) : undefined
   }
 
   getTimeRatio() {
@@ -200,9 +203,10 @@ export default class Item<CustomItem extends TimelineItemBase<number>> extends C
   }
 
   dragTimeSnap(dragTime: number, considerOffset?: boolean) {
-    const { dragSnap } = this.props
+    const { dragSnap, timezone } = this.props
+
     if (dragSnap) {
-      const offset = considerOffset ? moment().utcOffset() * 60 * 1000 : 0
+      const offset = considerOffset ? getTimezoneOffsetMs(timezone) : 0
       return Math.round(dragTime / dragSnap) * dragSnap - (offset % dragSnap)
     } else {
       return dragTime
@@ -220,12 +224,11 @@ export default class Item<CustomItem extends TimelineItemBase<number>> extends C
   }
 
   dragTime(e: MouseEvent) {
-    const startTime = moment(this.itemTimeStart)
-
     if (this.state.dragging) {
       return this.dragTimeSnap(this.timeFor(e) + this.state.dragStart!.offset, true)
     } else {
-      return startTime.valueOf()
+      const { timezone } = this.props
+      return Temporal.Instant.fromEpochMilliseconds(this.itemTimeStart!).toZonedDateTimeISO(timezone).epochMilliseconds
     }
   }
 

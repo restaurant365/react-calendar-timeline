@@ -1,8 +1,10 @@
-import { ReactNode, CSSProperties, HTMLProps, MouseEventHandler, Ref, Component, ReactElement } from 'react'
-import { Dimension, ItemDimension } from './dimension'
+import type { Temporal } from '@js-temporal/polyfill'
+import { Component, CSSProperties, HTMLProps, MouseEventHandler, ReactElement, ReactNode, Ref } from 'react'
 import { ResizeEdge } from '../items/Item'
 import { SelectUnits } from '../utility/calendar'
-import { Moment } from 'moment'
+import { Dimension, ItemDimension } from './dimension'
+
+export type TimelineDate = Temporal.ZonedDateTime
 
 export type Id = number | string
 
@@ -24,7 +26,7 @@ export type GroupedItem = {
   items: ItemDimension[]
 }
 
-export interface TimelineItemBase<DateType> {
+export interface TimelineItemBase<DateType extends number | TimelineDate = TimelineDate> {
   id: Id
   group: Id
   title?: ReactNode | undefined
@@ -53,6 +55,7 @@ export interface TimelineContext {
   canvasTimeEnd: number
   canvasWidth: number
   timelineUnit: SelectUnits
+  timezone: string
 }
 
 export type GroupStack = {
@@ -207,14 +210,14 @@ export interface IntervalRenderer<Data> {
 }
 
 export interface Interval {
-  startTime: Moment
-  endTime: Moment
+  startTime: TimelineDate
+  endTime: TimelineDate
   labelWidth?: number
   left?: number
 }
 
 export interface HeaderContext {
-  intervals: Array<{ startTime: Moment; endTime: Moment }>
+  intervals: Array<{ startTime: TimelineDate; endTime: TimelineDate }>
   unit: string
 }
 
@@ -225,7 +228,7 @@ export interface CustomHeaderPropsChildrenFnProps<Data> {
   getRootProps: (propsToOverride?: { style: CSSProperties }) => {
     style: CSSProperties
   }
-  showPeriod: (startDate: Moment | number, endDate: Moment | number) => void
+  showPeriod: (startDate: TimelineDate | number, endDate: TimelineDate | number) => void
   data: Data
 }
 

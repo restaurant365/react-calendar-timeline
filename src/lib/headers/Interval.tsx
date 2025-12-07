@@ -1,15 +1,14 @@
 import React, { HTMLAttributes, ReactNode } from 'react'
-import { getNextUnit, SelectUnits } from '../utility/calendar'
+import { getEndOfUnit, getNextUnit, SelectUnits, getStartOfUnit } from '../utility/calendar'
 import { composeEvents } from '../utility/events'
-import { IntervalRenderer, Interval as IntervalType, GetIntervalProps } from '../types/main'
+import { IntervalRenderer, Interval as IntervalType, GetIntervalProps, TimelineDate } from '../types/main'
 import { GetIntervalPropsType } from './types'
-import { Moment } from 'moment'
 
 export type IntervalProps<Data> = {
   intervalRenderer: (p: IntervalRenderer<Data>) => ReactNode
   unit: SelectUnits
   interval: IntervalType
-  showPeriod: (startTime: Moment, endTime: Moment) => void
+  showPeriod: (startTime: TimelineDate, endTime: TimelineDate) => void
   intervalText: string
   primaryHeader: boolean
   getIntervalProps: GetIntervalPropsType
@@ -22,8 +21,8 @@ class Interval<Data> extends React.PureComponent<IntervalProps<Data>> {
     const { primaryHeader, interval, unit, showPeriod } = this.props
     if (primaryHeader) {
       const nextUnit = getNextUnit(unit)
-      const newStartTime = interval.startTime.clone().startOf(nextUnit)
-      const newEndTime = interval.startTime.clone().endOf(nextUnit)
+      const newStartTime = getStartOfUnit(interval.startTime, nextUnit)
+      const newEndTime = getEndOfUnit(interval.startTime, nextUnit)
       showPeriod(newStartTime, newEndTime)
     } else {
       showPeriod(interval.startTime, interval.endTime)

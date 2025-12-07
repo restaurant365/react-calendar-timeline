@@ -5,23 +5,30 @@ import { getNextUnit, SelectUnits } from '../utility/calendar'
 import { defaultHeaderFormats } from '../default-config'
 import memoize from 'memoize-one'
 import { CustomDateHeader } from './CustomDateHeader'
-import { IntervalRenderer, SidebarHeaderChildrenFnProps, TimelineTimeSteps } from '../types/main'
-import { Moment, unitOfTime } from 'moment';
+import { IntervalRenderer, SidebarHeaderChildrenFnProps, TimelineDate, TimelineTimeSteps } from '../types/main'
 
-type UnitType = unitOfTime.Base | unitOfTime._date;
+type UnitType = keyof typeof defaultHeaderFormats
 
 type GetHeaderData<Data> = (
   intervalRenderer: (p: IntervalRenderer<Data>) => ReactNode,
   style: React.CSSProperties,
   className: string | undefined,
-  getLabelFormat: (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string,
+  getLabelFormat: (
+    interval: [TimelineDate, TimelineDate],
+    unit: keyof typeof defaultHeaderFormats,
+    labelWidth: number,
+  ) => string,
   unitProp: UnitType | 'primaryHeader' | undefined,
   headerData: Data | undefined,
 ) => {
   intervalRenderer?: IntervalRenderer<Data>
   style: React.CSSProperties
   className: string
-  getLabelFormat: (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => string
+  getLabelFormat: (
+    interval: [TimelineDate, TimelineDate],
+    unit: keyof typeof defaultHeaderFormats,
+    labelWidth: number,
+  ) => string
   unitProp: UnitType | 'primaryHeader' | undefined
   headerData: Data
 }
@@ -31,9 +38,12 @@ export interface DateHeaderProps<Data> {
   unit?: keyof TimelineTimeSteps | 'primaryHeader' | undefined
   timelineUnit: SelectUnits
   labelFormat?:
-  | string
-  | (([startTime, endTime]: [Moment, Moment], unit: UnitType | 'primaryHeader', labelWidth: number) => string)
-  | undefined
+    | ((
+        [startTime, endTime]: [TimelineDate, TimelineDate],
+        unit: UnitType | 'primaryHeader',
+        labelWidth: number,
+      ) => string)
+    | undefined
   intervalRenderer?: (props: IntervalRenderer<Data>) => ReactNode
   headerData?: Data | undefined
   children?: ((props: SidebarHeaderChildrenFnProps<Data>) => ReactNode) | undefined
@@ -57,12 +67,13 @@ class DateHeaderInner<Data> extends React.Component<DateHeaderProps<Data>> {
     }
   })
 
-  getLabelFormat = (interval: [Moment, Moment], unit: keyof typeof defaultHeaderFormats, labelWidth: number) => {
+  getLabelFormat = (
+    interval: [TimelineDate, TimelineDate],
+    unit: keyof typeof defaultHeaderFormats,
+    labelWidth: number,
+  ) => {
     const { labelFormat } = this.props
-    if (typeof labelFormat === 'string') {
-      const startTime = interval[0]
-      return startTime.format(labelFormat)
-    } else if (typeof labelFormat === 'function') {
+    if (typeof labelFormat === 'function') {
       return labelFormat(interval, unit as UnitType, labelWidth)
     } else {
       throw new Error('labelFormat should be function or string')
@@ -144,7 +155,7 @@ export function DateHeader<Data>({
 }
 
 function formatLabel(
-  [timeStart]: [Moment, Moment],
+  [timeStart]: [TimelineDate, TimelineDate],
   unit: keyof typeof defaultHeaderFormats,
   labelWidth: number,
   formatOptions = defaultHeaderFormats,
@@ -159,7 +170,7 @@ function formatLabel(
   } else {
     format = formatOptions[unit]['short']
   }
-  return timeStart.format(format)
+  return timeStart.toLocaleString('en-US', format)
 }
 
 export default DateHeader

@@ -25,6 +25,7 @@ type ItemsProps<CustomItem extends TimelineItemBase<number>> = {
   canResize?: CanResize
   canSelect?: boolean
   keys: TimelineKeys
+  timezone: string
   moveResizeValidator?: ItemProps<CustomItem>['moveResizeValidator']
   itemSelect: ItemProps<CustomItem>['onSelect']
   itemDrag: ItemProps<CustomItem>['onDrag']
@@ -72,7 +73,8 @@ export default class Items<CustomItem extends TimelineItemBase<number>> extends 
       nextProps.canChangeGroup === this.props.canChangeGroup &&
       nextProps.canMove === this.props.canMove &&
       nextProps.canResize === this.props.canResize &&
-      nextProps.canSelect === this.props.canSelect
+      nextProps.canSelect === this.props.canSelect &&
+      nextProps.timezone === this.props.timezone
     )
   }
 
@@ -92,7 +94,7 @@ export default class Items<CustomItem extends TimelineItemBase<number>> extends 
   }
 
   render() {
-    const { canvasTimeStart, canvasTimeEnd, dimensionItems, keys, groups } = this.props
+    const { canvasTimeStart, canvasTimeEnd, dimensionItems, keys, groups, timezone } = this.props
     const { itemIdKey, itemGroupKey } = keys
 
     const groupOrders = getGroupOrders(groups, keys)
@@ -107,6 +109,7 @@ export default class Items<CustomItem extends TimelineItemBase<number>> extends 
             <Item
               itemProps={item.itemProps}
               key={_get(item, itemIdKey)}
+              timezone={timezone}
               item={item}
               keys={this.props.keys}
               order={groupOrders[_get(item, itemGroupKey)]}

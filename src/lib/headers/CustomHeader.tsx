@@ -2,13 +2,12 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useTimelineHeadersContext } from './HeadersContext'
 import { useTimelineState } from '../timeline/TimelineStateContext'
 import { iterateTimes } from '../utility/calendar'
-import { Interval, TimelineTimeSteps } from '../types/main'
-import { Moment } from 'moment'
+import { Interval, TimelineDate, TimelineTimeSteps } from '../types/main'
 import { CustomDateHeaderProps } from './CustomDateHeader'
 import isEqual from 'lodash/isEqual'
 import { GetIntervalPropsType } from './types'
 
-export type CustomHeaderProps<Data> = {
+export interface CustomHeaderProps<Data> {
   children: (p: CustomDateHeaderProps<Data>) => ReactNode
   unit: keyof TimelineTimeSteps
   timeSteps: any
@@ -17,17 +16,19 @@ export type CustomHeaderProps<Data> = {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
-  showPeriod: (start: Moment, end: Moment) => void
+  showPeriod: (start: TimelineDate, end: TimelineDate) => void
   headerData?: Data
   getLeftOffsetFromDate: (date: any) => number
   height: number
   timelineWidth: number
+  timezone: string
 }
 
-type GetHeaderIntervalsParams = {
+interface GetHeaderIntervalsParams {
   canvasTimeStart: number
   canvasTimeEnd: number
   unit: keyof TimelineTimeSteps
+  timezone: string
   timeSteps: any
   getLeftOffsetFromDate: (date: any) => number
 }
@@ -41,13 +42,14 @@ type State = {
 class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State> {
   constructor(props: CustomHeaderProps<Data>) {
     super(props)
-    const { canvasTimeStart, canvasTimeEnd, unit, timeSteps, getLeftOffsetFromDate } = props
+    const { canvasTimeStart, canvasTimeEnd, unit, timeSteps, getLeftOffsetFromDate, timezone } = props
 
     const intervals = this.getHeaderIntervals({
       canvasTimeStart,
       canvasTimeEnd,
-      unit,
       timeSteps,
+      timezone,
+      unit,
       getLeftOffsetFromDate,
     })
 
@@ -85,13 +87,14 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
       //prevProps.timeSteps !== this.props.timeSteps ||
       //prevProps.showPeriod !== this.props.showPeriod
     ) {
-      const { canvasTimeStart, canvasTimeEnd, unit, timeSteps, getLeftOffsetFromDate } = this.props
+      const { canvasTimeStart, canvasTimeEnd, unit, timeSteps, getLeftOffsetFromDate, timezone } = this.props
 
       const intervals = this.getHeaderIntervals({
         canvasTimeStart,
         canvasTimeEnd,
-        unit,
         timeSteps,
+        timezone,
+        unit,
         getLeftOffsetFromDate,
       })
 
@@ -103,20 +106,16 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
     canvasTimeStart,
     canvasTimeEnd,
     unit,
+    timezone,
     timeSteps,
     getLeftOffsetFromDate,
   }) => {
     const intervals: Interval[] = []
-    iterateTimes(canvasTimeStart, canvasTimeEnd, unit, timeSteps, (startTime, endTime) => {
-      const left = getLeftOffsetFromDate(startTime.valueOf())
-      const right = getLeftOffsetFromDate(endTime.valueOf())
+    iterateTimes(canvasTimeStart, canvasTimeEnd, unit, timeSteps, timezone, (startTime, endTime) => {
+      const left = getLeftOffsetFromDate(startTime.epochMilliseconds)
+      const right = getLeftOffsetFromDate(endTime.epochMilliseconds)
       const width = right - left
-      intervals.push({
-        startTime,
-        endTime,
-        labelWidth: width,
-        left,
-      })
+      intervals.push({ startTime, endTime, labelWidth: width, left })
     })
     return intervals
   }
@@ -143,7 +142,7 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
         width: labelWidth,
         position: 'absolute',
       },
-      key: `label-${startTime.valueOf()}`,
+      key: `label-${startTime.epochMilliseconds}`,
     }
   }
 
@@ -157,6 +156,7 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
       unit,
       showPeriod,
       headerData,
+      timezone,
     } = this.props
     //TODO: only evaluate on changing params
 
@@ -167,6 +167,7 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
         visibleTimeEnd,
         canvasTimeStart,
         canvasTimeEnd,
+        timezone,
       },
       headerContext: {
         unit,
@@ -182,7 +183,6 @@ class CustomHeader<Data> extends React.Component<CustomHeaderProps<Data>, State>
   render() {
     const props = this.getStateAndHelpers()
     return this.props.children(props)
-
   }
 }
 

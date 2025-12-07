@@ -4,7 +4,7 @@ import { iterateTimes } from '../utility/calendar'
 import { TimelineStateConsumer } from '../timeline/TimelineStateContext'
 import { TimelineTimeSteps } from '../types/main'
 
-type WrapperColumnsProps = {
+interface WrapperColumnsProps {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
@@ -15,7 +15,8 @@ type WrapperColumnsProps = {
   verticalLineClassNamesForTime?: (a: number, b: number) => string[]
 }
 
-type ColumnsProps = WrapperColumnsProps & {
+interface ColumnsProps extends WrapperColumnsProps {
+  timezone: string
   getLeftOffsetFromDate: (time: number) => number
 }
 
@@ -29,6 +30,7 @@ class Columns extends Component<ColumnsProps> {
       nextProps.minUnit === this.props.minUnit &&
       nextProps.timeSteps === this.props.timeSteps &&
       nextProps.height === this.props.height &&
+      nextProps.timezone === this.props.timezone &&
       nextProps.verticalLineClassNamesForTime === this.props.verticalLineClassNamesForTime
     )
   }
@@ -37,41 +39,37 @@ class Columns extends Component<ColumnsProps> {
     const {
       canvasTimeStart,
       canvasTimeEnd,
-      // canvasWidth,
+      timezone,
       minUnit,
       timeSteps,
       height,
       verticalLineClassNamesForTime,
       getLeftOffsetFromDate,
     } = this.props
-    //const ratio = canvasWidth / (canvasTimeEnd - canvasTimeStart)
 
     const lines: React.JSX.Element[] = []
 
-    iterateTimes(canvasTimeStart, canvasTimeEnd, minUnit, timeSteps, (time, nextTime) => {
-      const minUnitValue = time.get(minUnit === 'day' ? 'date' : minUnit)
+    iterateTimes(canvasTimeStart, canvasTimeEnd, minUnit, timeSteps, timezone, (time, nextTime) => {
+      const minUnitValue = time[minUnit === 'day' ? 'day' : minUnit]
       const firstOfType = minUnitValue === (minUnit === 'day' ? 1 : 0)
 
       let classNamesForTime: string[] = []
       if (verticalLineClassNamesForTime) {
-        classNamesForTime = verticalLineClassNamesForTime(
-          time.unix() * 1000, // turn into ms, which is what verticalLineClassNamesForTime expects
-          nextTime.unix() * 1000 - 1,
-        )
+        classNamesForTime = verticalLineClassNamesForTime(time.epochMilliseconds, nextTime.epochMilliseconds - 1)
       }
 
       // TODO: rename or remove class that has reference to vertical-line
       const classNames =
         'rct-vl' +
         (firstOfType ? ' rct-vl-first' : '') +
-        (minUnit === 'day' || minUnit === 'hour' || minUnit === 'minute' ? ` rct-day-${time.day()} ` : ' ') +
+        (minUnit === 'day' || minUnit === 'hour' || minUnit === 'minute' ? ` rct-day-${time.dayOfWeek} ` : ' ') +
         classNamesForTime.join(' ')
 
-      const left = getLeftOffsetFromDate(time.valueOf())
-      const right = getLeftOffsetFromDate(nextTime.valueOf())
+      const left = getLeftOffsetFromDate(time.epochMilliseconds)
+      const right = getLeftOffsetFromDate(nextTime.epochMilliseconds)
       lines.push(
         <div
-          key={`line-${time.valueOf()}`}
+          key={`line-${time.epochMilliseconds}`}
           className={classNames}
           style={{
             pointerEvents: 'none',
@@ -91,7 +89,10 @@ class Columns extends Component<ColumnsProps> {
 const ColumnsWrapper: FC<WrapperColumnsProps> = ({ ...props }) => {
   return (
     <TimelineStateConsumer>
-      {({ getLeftOffsetFromDate }) => <Columns getLeftOffsetFromDate={getLeftOffsetFromDate} {...props} />}
+      {({ getLeftOffsetFromDate, getTimelineState }) => {
+        const timelineState = getTimelineState()
+        return <Columns getLeftOffsetFromDate={getLeftOffsetFromDate} timezone={timelineState.timezone} {...props} />
+      }}
     </TimelineStateConsumer>
   )
 }
