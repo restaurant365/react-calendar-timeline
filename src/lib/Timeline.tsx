@@ -56,7 +56,7 @@ export type OnTimeChange<CustomItem, CustomGroup> = (
 ) => any
 
 export type ReactCalendarTimelineProps<
-  CustomItem extends TimelineItemBase<number>,
+  CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate> = TimelineItemBase<TimelineDate>,
   CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 > = {
   children?: React.ReactNode
@@ -133,7 +133,7 @@ export type ReactCalendarTimelineProps<
 }
 
 export type ReactCalendarTimelineState<
-  CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
+  CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate> = TimelineItemBase<TimelineDate>,
   CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 > = {
   width: number
@@ -159,7 +159,7 @@ export type ReactCalendarTimelineState<
 }
 
 export default class ReactCalendarTimeline<
-  CustomItem extends TimelineItemBase<any> = TimelineItemBase<number>,
+  CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate> = TimelineItemBase<TimelineDate>,
   CustomGroup extends TimelineGroupBase = TimelineGroupBase,
 > extends Component<
   ReactCalendarTimelineProps<CustomItem, CustomGroup>,
@@ -409,7 +409,7 @@ export default class ReactCalendarTimeline<
   scrollComponent: HTMLDivElement | null = null
   scrollHeaderRef: HTMLDivElement | null = null
 
-  componentDidUpdate(_: ReactCalendarTimelineProps<CustomItem, CustomGroup>, prevState: ReactCalendarTimelineState) {
+  componentDidUpdate(_: ReactCalendarTimelineProps<CustomItem, CustomGroup>, prevState: ReactCalendarTimelineState<CustomItem, CustomGroup>) {
     const newZoom = this.state.visibleTimeEnd - this.state.visibleTimeStart
     const oldZoom = prevState.visibleTimeEnd - prevState.visibleTimeStart
 

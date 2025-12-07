@@ -4,7 +4,7 @@ import { useTimelineState } from '../timeline/TimelineStateContext'
 import { iterateTimes } from '../utility/calendar'
 import { Interval, TimelineDate, TimelineTimeSteps } from '../types/main'
 import { CustomDateHeaderProps } from './CustomDateHeader'
-import isEqual from 'lodash/isEqual'
+import isEqual from 'react-fast-compare'
 import { GetIntervalPropsType } from './types'
 
 export interface CustomHeaderProps<Data> {

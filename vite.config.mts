@@ -21,7 +21,14 @@ export default defineConfig({
       fileName: (format, entryName) => `react-calendar-timeline.${entryName}.${format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@js-temporal/polyfill'],
+      external: [
+        'react',
+        'react/jsx-runtime',
+        'react-dom',
+        'react-dom/client',
+        '@js-temporal/polyfill',
+        'react-fast-compare',
+      ],
       output: {
         globals: {
           react: 'React',

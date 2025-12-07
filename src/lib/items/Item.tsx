@@ -26,9 +26,9 @@ import {
   selectedAndCanResizeRightAndDragRight,
   selectedStyle,
 } from './styles'
-import { Id, ItemContext, TimelineItemBase, TimelineKeys } from '../types/main'
+import { Id, ItemContext, TimelineDate, TimelineItemBase, TimelineKeys } from '../types/main'
 import { TimelineContext, TimelineContextType } from '../timeline/TimelineStateContext'
-import isEqual from 'lodash/isEqual'
+import isEqual from 'react-fast-compare'
 import { Temporal } from '@js-temporal/polyfill'
 
 export type ResizeEdge = 'left' | 'right'
@@ -39,7 +39,7 @@ type OnSelect = (
   event: MouseEvent<HTMLElement> | TouchEvent<HTMLElement>,
 ) => void
 
-export type ItemProps<CustomItem extends TimelineItemBase<number>> = {
+export type ItemProps<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>> = {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
@@ -100,7 +100,9 @@ export type GetItemPropsParams = HTMLAttributes<HTMLDivElement> & {
   rightStyle?: CSSProperties
 }
 
-export interface ItemRendererProps<CustomItem extends TimelineItemBase<number>> {
+export interface ItemRendererProps<
+  CustomItem extends TimelineItemBase<TimelineDate> | TimelineItemBase<number> = TimelineItemBase<TimelineDate>,
+> {
   item: CustomItem
   timelineContext: TimelineContextType
   itemContext: ItemContext
@@ -117,7 +119,7 @@ export type GetResizeProps = (params?: GetItemPropsParams) => {
   left: GetResizePropsDirection
 }
 
-export default class Item<CustomItem extends TimelineItemBase<number>> extends Component<
+export default class Item<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>> extends Component<
   ItemProps<CustomItem>,
   ItemState
 > {

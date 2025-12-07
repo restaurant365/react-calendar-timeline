@@ -2,11 +2,11 @@ import { Component } from 'react'
 import Item, { ItemProps } from './Item'
 import { _get, arraysEqual, keyBy } from '../utility/generic'
 import { getGroupOrders, getVisibleItems } from '../utility/calendar'
-import { Id, TimelineGroupBase, TimelineItemBase, TimelineKeys } from '../types/main'
+import { Id, TimelineDate, TimelineGroupBase, TimelineItemBase, TimelineKeys } from '../types/main'
 import { ItemDimension } from '../types/dimension'
 
 export type CanResize = true | false | 'left' | 'right' | 'both'
-type ItemsProps<CustomItem extends TimelineItemBase<number>> = {
+type ItemsProps<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>> = {
   groups: TimelineGroupBase[]
   items: CustomItem[]
   dimensionItems: ItemDimension[]
@@ -43,17 +43,17 @@ type ItemsProps<CustomItem extends TimelineItemBase<number>> = {
 
 type ItemsState = object
 
-function canResizeLeft<CustomItem extends TimelineItemBase<number>>(item: CustomItem, canResize?: CanResize) {
+function canResizeLeft<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>>(item: CustomItem, canResize?: CanResize) {
   const value = _get(item, 'canResize') !== undefined ? _get(item, 'canResize') : canResize
   return value === 'left' || value === 'both'
 }
 
-function canResizeRight<CustomItem extends TimelineItemBase<number>>(item: CustomItem, canResize?: CanResize) {
+function canResizeRight<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>>(item: CustomItem, canResize?: CanResize) {
   const value = _get(item, 'canResize') !== undefined ? _get(item, 'canResize') : canResize
   return value === 'right' || value === 'both' || value === true
 }
 
-export default class Items<CustomItem extends TimelineItemBase<number>> extends Component<
+export default class Items<CustomItem extends TimelineItemBase<number> | TimelineItemBase<TimelineDate>> extends Component<
   ItemsProps<CustomItem>,
   ItemsState
 > {
