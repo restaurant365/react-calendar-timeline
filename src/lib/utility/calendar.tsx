@@ -50,7 +50,7 @@ export function getEndOfUnit(date: TimelineDate, unit: keyof TimelineTimeSteps):
   return nextUnitStart.subtract({ milliseconds: 1 })
 }
 
-export function alignTimelineDateToStep(date: TimelineDate, unit: keyof TimelineTimeSteps, step: number): TimelineDate {
+function alignTimelineDateToStep(date: TimelineDate, unit: keyof TimelineTimeSteps, step: number): TimelineDate {
   if (step <= 1) {
     return date
   }

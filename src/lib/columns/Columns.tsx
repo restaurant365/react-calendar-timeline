@@ -1,8 +1,9 @@
+import cn from 'classnames'
 import React, { Component, FC } from 'react'
 
-import { iterateTimes } from '../utility/calendar'
 import { TimelineStateConsumer } from '../timeline/TimelineStateContext'
 import { TimelineTimeSteps } from '../types/main'
+import { iterateTimes } from '../utility/calendar'
 
 interface WrapperColumnsProps {
   canvasTimeStart: number
@@ -59,11 +60,14 @@ class Columns extends Component<ColumnsProps> {
       }
 
       // TODO: rename or remove class that has reference to vertical-line
-      const classNames =
-        'rct-vl' +
-        (firstOfType ? ' rct-vl-first' : '') +
-        (minUnit === 'day' || minUnit === 'hour' || minUnit === 'minute' ? ` rct-day-${time.dayOfWeek} ` : ' ') +
-        classNamesForTime.join(' ')
+      const classNames = cn(
+        'rct-vl',
+        {
+          'rct-vl-first': firstOfType,
+          [`rct-day-${time.dayOfWeek}`]: minUnit === 'day' || minUnit === 'hour' || minUnit === 'minute',
+        },
+        classNamesForTime,
+      )
 
       const left = getLeftOffsetFromDate(time.epochMilliseconds)
       const right = getLeftOffsetFromDate(nextTime.epochMilliseconds)
