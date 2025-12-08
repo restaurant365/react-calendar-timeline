@@ -9,7 +9,7 @@ and this project adheres (more or less) to [Semantic Versioning](http://semver.o
 * Replace moment.js with Temporal API for improved timezone support and better date/time handling
 * Add `timezone` prop to Timeline component to specify the timezone for date calculations and display
 * Enhanced timezone-aware date formatting and calculations throughout the component
-* Replace `lodash` with `react-fast-compare` for improved performance in deep equality comparisons
+* Replace `lodash` with custom `react-fast-compare` for improved performance in deep equality comparisons
 * Export reusable types for better type safety and improved module resolution compatibility with modern bundlers
 
 ## 0.30.3

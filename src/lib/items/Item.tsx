@@ -12,6 +12,7 @@ import {
 import interact from 'interactjs'
 import { _get } from '../utility/generic'
 import { composeEvents } from '../utility/events'
+import isEqual from '../utility/isEqual'
 import { defaultItemRenderer } from './defaultItemRenderer'
 import { coordinateToTimeRatio, getTimezoneOffsetMs, toEpochMilliseconds } from '../utility/calendar'
 import { getSumOffset, getSumScroll } from '../utility/dom-helpers'
@@ -28,7 +29,6 @@ import {
 } from './styles'
 import { Id, ItemContext, TimelineDate, TimelineItemBase, TimelineKeys } from '../types/main'
 import { TimelineContext, TimelineContextType } from '../timeline/TimelineStateContext'
-import isEqual from 'react-fast-compare'
 import { Temporal } from '@js-temporal/polyfill'
 
 export type ResizeEdge = 'left' | 'right'

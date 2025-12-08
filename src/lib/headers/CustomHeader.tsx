@@ -1,10 +1,10 @@
 import React, { CSSProperties, ReactNode } from 'react'
-import { useTimelineHeadersContext } from './HeadersContext'
 import { useTimelineState } from '../timeline/TimelineStateContext'
-import { iterateTimes } from '../utility/calendar'
 import { Interval, TimelineDate, TimelineTimeSteps } from '../types/main'
+import { iterateTimes } from '../utility/calendar'
+import isEqual from '../utility/isEqual'
 import { CustomDateHeaderProps } from './CustomDateHeader'
-import isEqual from 'react-fast-compare'
+import { useTimelineHeadersContext } from './HeadersContext'
 import { GetIntervalPropsType } from './types'
 
 export interface CustomHeaderProps<Data> {

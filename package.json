@@ -86,8 +86,7 @@
     "classnames": "^2.5.1",
     "interactjs": "1.10.27",
     "react": ">=18",
-    "react-dom": ">=18",
-    "react-fast-compare": "^3.2.2"
+    "react-dom": ">=18"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.0.3",
@@ -121,7 +120,6 @@
     "randomcolor": "^0.6.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-fast-compare": "^3.2.2",
     "rollup-plugin-typescript-paths": "^1.5.0",
     "sass": "^1.69.5",
     "typescript": "^5.2.2",
