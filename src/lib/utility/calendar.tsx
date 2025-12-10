@@ -761,19 +761,26 @@ export function getItemWithInteractions<
   const itemId = _get(item, keys.itemIdKey)
   const isDragging = itemId === draggingItem
   const isResizing = itemId === resizingItem
+  const originalStart = _get(item, keys.itemTimeStartKey) as number | Temporal.ZonedDateTime
+  const originalEnd = _get(item, keys.itemTimeEndKey) as number | Temporal.ZonedDateTime
   const [itemTimeStart, itemTimeEnd] = calculateInteractionNewTimes({
-    itemTimeStart: toEpochMilliseconds(_get(item, keys.itemTimeStartKey)),
-    itemTimeEnd: toEpochMilliseconds(_get(item, keys.itemTimeEndKey)),
+    itemTimeStart: toEpochMilliseconds(originalStart),
+    itemTimeEnd: toEpochMilliseconds(originalEnd),
     isDragging,
     isResizing,
     dragTime,
     resizingEdge,
     resizeTime,
   })
+
   return {
     ...item,
-    [keys.itemTimeStartKey]: Temporal.Instant.fromEpochMilliseconds(itemTimeStart),
-    [keys.itemTimeEndKey]: Temporal.Instant.fromEpochMilliseconds(itemTimeEnd),
+    [keys.itemTimeStartKey]:
+      originalStart instanceof Temporal.ZonedDateTime
+        ? toTimelineDate(itemTimeStart, originalStart.timeZoneId)
+        : itemTimeStart,
+    [keys.itemTimeEndKey]:
+      originalEnd instanceof Temporal.ZonedDateTime ? toTimelineDate(itemTimeEnd, originalEnd.timeZoneId) : itemTimeEnd,
     [keys.itemGroupKey]: isDragging ? _get(groups[newGroupOrder], keys.groupIdKey) : _get(item, keys.itemGroupKey),
   }
 }
