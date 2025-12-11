@@ -21,52 +21,52 @@ export const defaultTimeSteps = {
 }
 
 type UnitValue = {
-  long: string
-  mediumLong: string
-  medium: string
-  short: string
+  long: Intl.DateTimeFormatOptions
+  mediumLong: Intl.DateTimeFormatOptions
+  medium: Intl.DateTimeFormatOptions
+  short: Intl.DateTimeFormatOptions
 }
 export const defaultHeaderFormats: Record<string, UnitValue> = {
   year: {
-    long: 'YYYY',
-    mediumLong: 'YYYY',
-    medium: 'YYYY',
-    short: 'YY',
+    long: { year: 'numeric' },
+    mediumLong: { year: 'numeric' },
+    medium: { year: 'numeric' },
+    short: { year: '2-digit' },
   },
   month: {
-    long: 'MMMM YYYY',
-    mediumLong: 'MMMM',
-    medium: 'MMMM',
-    short: 'MM/YY',
+    long: { month: 'long', year: 'numeric' },
+    mediumLong: { month: 'long' },
+    medium: { month: 'short' },
+    short: { month: 'numeric', year: '2-digit' },
   },
   week: {
-    long: 'w',
-    mediumLong: 'w',
-    medium: 'w',
-    short: 'w',
+    long: { month: 'short', day: 'numeric' },
+    mediumLong: { month: 'short', day: 'numeric' },
+    medium: { month: 'short', day: 'numeric' },
+    short: { month: 'short', day: 'numeric' },
   },
   day: {
-    long: 'dddd, LL',
-    mediumLong: 'dddd, LL',
-    medium: 'dd D',
-    short: 'D',
+    long: { weekday: 'long', month: 'long', day: 'numeric' },
+    mediumLong: { weekday: 'long', month: 'long', day: 'numeric' },
+    medium: { day: 'numeric', weekday: 'short' },
+    short: { day: 'numeric' },
   },
   hour: {
-    long: 'dddd, LL, HH:00',
-    mediumLong: 'L, HH:00',
-    medium: 'HH:00',
-    short: 'HH',
+    long: { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' },
+    mediumLong: { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' },
+    medium: { hour: 'numeric', minute: 'numeric' },
+    short: { hour: 'numeric' },
   },
   minute: {
-    long: 'HH:mm',
-    mediumLong: 'HH:mm',
-    medium: 'HH:mm',
-    short: 'mm',
+    long: { hour: 'numeric', minute: 'numeric' },
+    mediumLong: { hour: 'numeric', minute: 'numeric' },
+    medium: { hour: 'numeric', minute: 'numeric' },
+    short: { minute: 'numeric' },
   },
   second: {
-    long: 'mm:ss',
-    mediumLong: 'mm:ss',
-    medium: 'mm:ss',
-    short: 'ss',
+    long: { minute: 'numeric', second: 'numeric' },
+    mediumLong: { minute: 'numeric', second: 'numeric' },
+    medium: { minute: 'numeric', second: 'numeric' },
+    short: { second: 'numeric' },
   },
 }

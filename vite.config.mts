@@ -4,6 +4,7 @@ import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import typescript from '@rollup/plugin-typescript'
 import { typescriptPaths } from 'rollup-plugin-typescript-paths'
+import packageJson from './package.json' assert { type: 'json' }
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,7 +22,7 @@ export default defineConfig({
       fileName: (format, entryName) => `react-calendar-timeline.${entryName}.${format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client'],
+      external: [...Object.keys(packageJson.peerDependencies), 'react/jsx-runtime', 'react-dom/client'],
       output: {
         globals: {
           react: 'React',

@@ -1,8 +1,7 @@
 import React, { PropsWithChildren, useContext } from 'react'
 
 import { calculateXPositionForTime, calculateTimeForXPosition, SelectUnits } from '../utility/calendar'
-import { TimelineContext as TimelineContextValue } from '../types/main'
-import { Moment } from 'moment'
+import { TimelineContext as TimelineContextValue, TimelineDate } from '../types/main'
 
 /* this context will hold all information regarding timeline state:
   1. timeline width
@@ -40,15 +39,16 @@ type TimelineStartProps = {
   canvasTimeStart: number
   canvasTimeEnd: number
   canvasWidth: number
-  showPeriod: (from: Moment, to: Moment) => void
+  showPeriod: (from: TimelineDate, to: TimelineDate) => void
   timelineUnit: SelectUnits
   timelineWidth: number
+  timezone: string
 }
 export type TimelineContextType = {
   getTimelineState: () => TimelineContextValue
   getLeftOffsetFromDate: (date: number) => number
   getDateFromLeftOffsetPosition: (leftOffset: number) => number
-  showPeriod: (from: Moment, to: Moment) => void
+  showPeriod: (from: TimelineDate, to: TimelineDate) => void
 }
 
 type TimelineState = {
@@ -78,6 +78,7 @@ export class TimelineStateProvider extends React.Component<PropsWithChildren<Tim
       canvasWidth,
       timelineUnit,
       timelineWidth,
+      timezone,
     } = this.props
     return {
       visibleTimeStart,
@@ -87,6 +88,7 @@ export class TimelineStateProvider extends React.Component<PropsWithChildren<Tim
       canvasWidth,
       timelineUnit,
       timelineWidth,
+      timezone,
     } as TimelineContextValue // REVIEW,
   }
 

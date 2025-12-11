@@ -20,9 +20,11 @@ export * from './lib/default-config'
 
 export { default as GroupRow } from './lib/row/GroupRow'
 export { default as RowItems } from './lib/items/Items'
-export { default as ResizeDetector } from "./resize-detector/container";
+export type { GetItemPropsParams, GetResizeProps, ItemRendererProps } from './lib/items/Item'
+export { default as ResizeDetector } from './resize-detector/container'
 
 export { TimelineContext } from './lib/timeline/TimelineStateContext'
+export type { TimelineContextType } from './lib/timeline/TimelineStateContext'
 export { Timeline }
 export type { ReactCalendarTimelineProps, ReactCalendarTimelineState, OnTimeChange }
 export default Timeline

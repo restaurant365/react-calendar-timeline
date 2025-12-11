@@ -7,13 +7,20 @@ and this project adheres (more or less) to [Semantic Versioning](http://semver.o
 
 ## Unreleased
 
+## 0.31.0
+* Replace moment.js with Temporal API for improved timezone support and better date/time handling
+* Add `timezone` prop to Timeline component to specify the timezone for date calculations and display
+* Enhanced timezone-aware date formatting and calculations throughout the component
+* Replace `lodash` with custom `react-fast-compare` for improved performance in deep equality comparisons
+* Export reusable types for better type safety and improved module resolution compatibility with modern bundlers
+
 ## 0.30.3
 * Added support for dynamic item sizing with an optional per-item `height` override prop.
 * Introduced `itemVerticalGap` timeline prop to ensure consistent spacing between timeline items, which takes precedence over the `itemHeightRatio` setting when specified.
 
 ## 0.30.0 (beta)
 Huge update made by @Remco4EF and @remcoblumink
- * full rewrite to typescript 
+ * full rewrite to typescript
  * uses Vite as bundler
  * Updates dependencies to latest versions
  * Updates react usage to 18+
