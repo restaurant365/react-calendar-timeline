@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres (more or less) to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+
+## 0.31.0
 * Replace moment.js with Temporal API for improved timezone support and better date/time handling
 * Add `timezone` prop to Timeline component to specify the timezone for date calculations and display
 * Enhanced timezone-aware date formatting and calculations throughout the component
